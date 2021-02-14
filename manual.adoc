@@ -1,3 +1,6 @@
 = C64LIB - User Manual
+:icons: font
 
-The C64Lib is a set of Kick Assmbler macros grouped in several libraries.
+WARNING: This document is under development!
+
+The C64Lib is a set of Kick Assembler macros grouped in several libraries. The goal is to create building blocks that can be reused in retro projects. The intention behind C64Lib is to provide retro community with modern development tools such as build support, CI assistance, dependency management, artifact versioning and comprehensive documentation.

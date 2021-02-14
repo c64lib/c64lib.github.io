@@ -6,7 +6,7 @@ jobs:
     steps:
       - checkout
       - run: bundle install
-      - run: bundle exec asciidoctor manual.adoc -D out
+      - run: bundle exec asciidoctor index.adoc -D out
       - deploy:
           name: Deploy Release to GitHub
           command: |
