@@ -5,6 +5,7 @@ jobs:
       - image: circleci/ruby:2.6.6
     steps:
       - checkout
+      - run: bundle update --bundler
       - run: bundle
       - run: bundle exec asciidoctor manual.adoc -D out
       - deploy:
