@@ -8,7 +8,7 @@ ls -al
 git stash
 git remote rm origin
 git remote add origin https://maciejmalecki:"$GITHUB_TOKEN"@github.com/c64lib/user-manual.git
-git checkout gh-pages
+git checkout origin gh-pages
 git pull origin gh-pages
 
 ls -al
