@@ -2,7 +2,8 @@ version: 2
 jobs:
   deploy:
     docker:
-      - image: circleci/ruby:3.0.0
+      - image: circleci/jruby:latest
+#      - image: circleci/ruby:3.0.0
     steps:
       - checkout
       - run: bundle install
