@@ -2,6 +2,9 @@
 :icons: font
 :toc: left
 :sectnums:
+:stylesheet: fedora.css
+:source-highlighter: highlight.js
+:highlightjs-languages: assembly
 
 WARNING: This document is under development!
 
@@ -10,4 +13,8 @@ The C64Lib is a set of Kick Assembler macros grouped in several libraries. They 
 include::_overview.adoc[]
 
 include::_install.adoc[]
+
+== Library reference
+
+include::_lib-common.adoc[leveloffset=+2]
 
