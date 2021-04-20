@@ -10,6 +10,11 @@ WARNING: This document is under development!
 
 The C64Lib is a set of Kick Assembler macros grouped in several libraries. They are the building blocks that can be reused in retro projects. The intention behind C64Lib is to provide retro community with modern development tools such as build support, CI assistance, dependency management, artifact versioning and comprehensive documentation.
 
+[excalidraw]
+....
+include::kroki-test.excalidraw[]
+....
+
 include::_overview.adoc[]
 
 include::_install.adoc[]
