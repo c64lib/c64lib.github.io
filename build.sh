@@ -1,3 +1,3 @@
 #!/bin/bash
 
-bundle exec asciidoctor index.adoc -D out -r asciidoctor-diagram
+bundle exec asciidoctor -D out -r asciidoctor-diagram -r asciidoctor-kroki index.adoc
