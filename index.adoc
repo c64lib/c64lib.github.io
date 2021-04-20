@@ -2,7 +2,7 @@
 :icons: font
 :toc: left
 :sectnums:
-:stylesheet: fedora.css
+:stylesheet: clean.css
 :source-highlighter: highlight.js
 :highlightjs-languages: assembly
 
