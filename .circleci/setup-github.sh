@@ -7,7 +7,7 @@ ls -al
 
 git stash
 git remote rm origin
-git remote add origin https://maciejmalecki:"$GITHUB_TOKEN"@github.com/c64lib/user-manual.git
+git remote add origin https://maciejmalecki:"$GITHUB_TOKEN"@github.com/c64lib/c64lib.github.io.git
 
 ls -al
 
