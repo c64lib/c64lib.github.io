@@ -2,27 +2,96 @@
 
 == Subroutines
 
-== Subroutine invocation
+== Passing parameters to subroutines
+In most cases a subroutine requires one or more input parameters.
+Number of parameters is basically unlimited.
+The size of each parameters can also vary (however usually it is 1 or 2 bytes).
+There are three methods of passing such parameters to the subroutine:
 
-The `common` library contains helper macros for implementing subroutine invocation.
-These macros basically handle parameter passing via the stack which are then stored in dedicated memory (usually allocated in unused part of the subroutine).
-This technique is especially handy in case the overall size of the input data cannot be realistically passed via CPU registers.
+* Using CPU registers.
+* Using fixed memory locations.
+* Using call stack.
+
+The "CPU regs" method is the simplest and the most efficient, however, due to limited number and size of MOS 6502 registers (`A`, `X`, `Y`, each 1 byte in size) its application is very limited.
+
+The "Fixed memory locations" method does not have this size limitation and also, when using zero page, can be quite performant.
+This method can be rather tricky in application, because memory locations must be carefully choosen not to clash between different, possibly cooperating subs.
+The most pragmatic approach to this method is to use <<Macro-hosted subroutines>>, where these fixed memory locations can be configured via macro attributes.
+
+The "call stack" method uses CPU stack located at page 1 to pass parameters.
+This way it is possible to pass more data than via CPU regs method and does not require fixed memory locations to be used.
+The stack size is of course very limited (256 bytes max, but each `jsr` consumes at least 3 bytes).
+
+It is possible and quite often useful to combine "CPU regs" and "Call stack" method: some arguments are passed via registers and some via stack.
+We'll call this method a hybrid invocation.
+
+=== Support for call stack parameters passing
+The `common` library contains helper macros for parameter passing via the stack.
 Recursive calls to the subroutines are not supported.
 
 Parameters should be pushed onto the stack just before calling subroutine (which is done via `jsr` instruction).
 Within the subroutine, parameters must be fetched from the stack in reverse order and stored elsewhere.
 Before this is done, a return pointer must be preserved in order to enable return from the subroutine (a `rts` instruction).
-There are two macros devoted to this operation: `invokeStackBegin` and `invokeStackEnd`. These are actually combined with `pullParam` and `pushParam`.
+
+There are four macros for pushing parameters to the subroutine:
+
+`pushParamB`:: Pushes single byte as a parameter. The byte is provided via macro parameter.
+`pushParamW`:: Pushes two bytes as a parameter. The word is provided via macro parameter.
+`pushParamBInd`:: Pushes single byte as a parameter. The address of this byte is provided via macro parameter.
+`pushParamWInd`:: Pushes two bytes as a parameter. The starting address of this two-byte value is provided via macro parameter.
+
+All these macros are destroying `A` register, that should be considered when using hybrid invocation (first push params via macros, last set the `A` parameter value).
+
+.`copyLargeMemForward` invocation.
+====
+The `copyLargeMemForward` subroutine copies up to 64K of data from one memory location to another memory location.
+These memory locations can overlap as long as we copy from lower address to higher address.
+This subroutine uses call stack invocation method and requires 6 bytes of input parameters:
+
+* Source data address.
+* Destination address.
+* Data size.
+
+Let's assume we want to copy 1024 bytes from $3000 to $4000.
+Example of the subroutine invocation is following:
 
 [source,asm]
 ----
-pushParamW()
-pushParamW()
-jsr rotateMemRight
+pushParamW($3000)
+pushParamW($4000)
+pushParamW(1024)
+jsr copyLargeMemForward
+----
+====
 
-// ...
+The subroutine, once being called, must do the following:
 
-rotateMemRight: {
+. Pull return address from the stack and store it in temporary place.
+. Pull all parameters from the stack in reverse order and store them in some internal placeholders.
+. Push return address back to the stack.
+
+Preserving and restoring of return address may be done via `invokeStackBegin` and `invokeStackEnd` macros.
+Each of these macros takes single argument that denotes temporary address of 2-byte large placeholder where return address can be preserved.
+
+The `invokeStackBegin` should be called before any parameter is pulled from the stack.
+The `invokeStackEnd` should be called before a `rts` instruction is called.
+
+There are three macros for pulling parameters from the stack (remember to call them in reverse order, this is how the stack works):
+
+`pullParamB`:: Pulls a single byte from the stack and stores it under address given as a macro parameter.
+`pullParamW`:: Pulls two bytes from the stack and stores them under address given as a macro parameter.
+`pullParamWList`:: Pulls two bytes from the stack and stores them under multiple addresses provided as an input parameter list.
+
+.`rotateMemRight` subroutine implementation.
+====
+The `rotateMemRight` subroutine rotates up to 256 bytes of the memory to the right.
+It uses hybrid invocation: a memory address (2 bytes) should be passed via stack, and size of the memory window should be set into `X` register.
+
+It uses self modifying code technique and copies input address directly into four address location in its own code.
+
+[source,asm]
+----
+  rotateMemRight: {
 
   invokeStackBegin(returnPtr)
   pullParamWList(List().add(loadFirst, loadNext, staNext, staLast))
@@ -44,8 +113,11 @@ rotateMemRight: {
   // local vars
   returnPtr:      .word 0
   preserve:       .byte 0
-}
+  }
 ----
+It is noteworthy, that semi-local variables are declared as additional 3 bytes at the end of the subroutine (guarded by preceding `rts` instruction).
+These variables are used to preserve return address and additional single byte for rotation.
+====
 
 == Memory operations
 
