@@ -1,11 +1,18 @@
-== Installation
-The C64Lib is a set of libraries that can be used in assembly programs written with Kick Assembler. Each library consists of one or more source files that shall be then imported in Kick Assembler program. There are several methods of downloading and "installation" of libraries, some of them will be presented there starting from the most convenient one.
+= Installation
+The `c64lib` is a set of libraries that can be used in assembly programs written with Kick Assembler.
+Each library consists of one or more source files that shall be then imported in Kick Assembler program.
+There are several methods of downloading and "installation" of libraries, some of them will be presented there starting from the most convenient one.
 
-=== Using Gradle as a build tool
-The easiest way to use C64Lib is to add the libraries as dependencies to the gradle build. It is an easy task due to Retro Assembler Plugin.
+== Using Gradle as a build tool
+The easiest way to use `c64lib` is to add the libraries as dependencies to the gradle build.
+It is an easy task due to Retro Build Tool.
 
-==== When Gradle is already used
-Well, when you are a happy user of Retro Assembler plugin, then you are even happier, because it's extremely easy to add C64Lib to your project. The C64Lib is a GitHub project, so it can be added as GitHub dependency to your `gradle.build` file. Put the following lines into your `retroProject` section of the build file:
+The complete manual for Retro Build Tool is available at: https://c64lib.github.io/gradle-retro-assembler-plugin/.
+
+=== When Gradle is already used
+Well, when you are a happy user of Retro Assembler plugin, then you are even happier, because it's extremely easy to add C64Lib to your project.
+The `c64lib` is a GitHub project, so it can be added as GitHub dependency to your `gradle.build` file.
+Put the following lines into your `retroProject` section of the build file:
 
 [source,groovy]
 ----
@@ -15,7 +22,9 @@ libFromGitHub "c64lib/text", "0.3.0"
 libFromGitHub "c64lib/copper64", "0.3.0"
 ----
 
-Then you will be able to use all four libraries from `c64lib`. Of course not all four are mandatory. You can use any subset of them as long as you obey dependency graph as shown in [here][libraries].
+Then you will be able to use all four libraries from `c64lib`.
+Of course not all four are mandatory.
+You can use any subset of them as long as you obey dependency graph as shown in <<Overview>>.
 
 Retro Assembler plugin downloads all dependencies into default location:
 
@@ -25,10 +34,13 @@ All libraries from `c64lib` will be downloaded under `c64lib` subfolder therefor
 
     .ga/deps/c64lib
 
-must be added to the lib dir so that Kick Assembler will see them when interpreting `#import` directive. The following must be also a part of your `gradle.build` file:
+must be added to the lib dir so that Kick Assembler will see them when interpreting `#import` directive.
+The following must be also a part of your `gradle.build` file:
 
 [source,groovy]
+----
 libDirs = [".ra/deps/c64lib"]
+----
 
 The complete `gradle.build` will be following:
 
@@ -53,22 +65,28 @@ retroProject {
 In order to build your executable you just need to execute gradle:
 
 [source,bash]
+----
 ./gradlew
+----
 
 or
 
 [source,bash]
+----
 ./gradlew build
+----
 
 In result C64 executables (a `prg` files) will be created.
 
-==== When Gradle is not used
-but you really want to start using it, you have to enable it first. Following steps are requires as preconditions:
+=== When Gradle is not used
+but you really want to start using it, you have to enable it first.
+Following steps are requires as preconditions:
 
-. Download and install JDK 8 or higher.
-. Download and install Gradle.
+* Download and install JDK 8 or higher.
+* Download and install Gradle.
 
-Once it is done, you have to restart your console/terminal application and go to your project location. In your location you run Gradle to install a wrapper:
+Once it is done, you have to restart your console/terminal application and go to your project location.
+In your location you run Gradle to install a wrapper:
 
 [source,bash]
 gradle wrapper
@@ -78,24 +96,18 @@ then you add `gradle.build` file using following content (or similar):
 [source,groovy]
 ----
 plugins {
-    id "com.github.c64lib.retro-assembler" version "1.0.1"
+    id "com.github.c64lib.retro-assembler" version "{rbt-version}"
 }
-
-repositories {
-    jcenter()
-}
-
-apply plugin: "com.github.c64lib.retro-assembler"
 
 retroProject {
     dialect = "KickAssembler"
-    dialectVersion = "5.9"
+    dialectVersion = "{kickass-version}"
     libDirs = [".ra/deps/c64lib"]
 
-    libFromGitHub "c64lib/common", "0.1.0"
-    libFromGitHub "c64lib/chipset", "0.1.0"
-    libFromGitHub "c64lib/text", "0.1.0"
-    libFromGitHub "c64lib/copper64", "0.1.0"
+    libFromGitHub "c64lib/common", "{c64lib-version}"
+    libFromGitHub "c64lib/chipset", "{c64lib-version}"
+    libFromGitHub "c64lib/text", "{c64lib-version}"
+    libFromGitHub "c64lib/copper64", "{c64lib-version}"
 }
 ----
 
@@ -103,7 +115,7 @@ Of course, the set of used libraries (with `libFromGitHub` element) may vary as 
 
 And that's it: from now on you are able to build your project using simple `gradlew` or `gradlew build` commands. It's not even necessary to have Gradle installed. All you need is Java 8 or higher.
 
-=== Manual clone from GitHub
+== Manual clone from GitHub
 If you don't want to or cannot use Retro Assembler plugin, you can use your git client and clone libraries manually and then just point the location with `-libdir` parameter of the KickAss.
 
 Lets assume your project has following directory layout on the disk:
@@ -124,7 +136,8 @@ git clone https://github.com/c64lib/text.git
 git clone https://github.com/c64lib/copper64.git
 ----
 
-This will checkout latest released version of the library (actually a top of the `master` branch, which usually means the same). In result, you will get something like this:
+This will checkout latest released version of the library (actually a top of the `master` branch, which usually means the same).
+In result, you will get something like this:
 
     work
       |--libs
@@ -151,27 +164,34 @@ If you then specify `-libdir` parameter to the KickAss appropriately, you'll be 
 
     #import "common/lib/math-global.asm"
 
-As mentioned earlier, checkout from `master` branch ensures that last released version of library is used. If you want to change it and use concrete version from the past, after `git clone` you have to enter the cloned directory (i.e. `cd common`) and checkout desired version:
+As mentioned earlier, checkout from `master` branch ensures that last released version of library is used.
+If you want to change it and use concrete version from the past, after `git clone` you have to enter the cloned directory (i.e. `cd common`) and checkout desired version:
 
 [source,bash]
-git checkout 1.0.0
+----
+git checkout {c64lib-version}
+----
 
-(for version `1.0.0`).
+(for version `{c64lib-version}`).
 
 Assembling is then possible with manual invocation of Kick Assembler:
 
 [source,bash]
+----
 java -jar c:\ka\KickAss.jar -libdir ../libs SomeFile.asm
 java -jar c:\ka\KickAss.jar -libdir ../libs SomeOtherFile.asm
+----
 
-=== Manual copy
-Least desired method of installation of `c64lib` is to download source code of given version and unzipping it into target directory. It is not a very convenient method, but it does not require Gradle nor Git to be installed on your computer.
+== Manual copy
+Least desired method of installation of `c64lib` is to download source code of given version and unzipping it into target directory.
+It is not a very convenient method, but it does not require Gradle nor Git to be installed on your computer.
 
 For every library module you have to visit GitHub and open Releases tab:
 
     https://github.com/c64lib/common/releases/tag/0.1.0
 
-Under assets, you will see zipped content of the library. Download it and unzip into desired location, i.e. into `libs` directory. In result, you end up with a similar layout as with "Git clone" method (see above).
+Under assets, you will see zipped content of the library. Download it and unzip into desired location, i.e. into `libs` directory.
+In result, you end up with a similar layout as with "Git clone" method (see above).
 
 You use exactly the same method to use library in your source code, i.e.:
 
@@ -180,6 +200,8 @@ You use exactly the same method to use library in your source code, i.e.:
 and you invoke Kick Assembler using the same syntax:
 
 [source,bash]
+----
 java -jar c:\ka\KickAss.jar -libdir ../libs SomeFile.asm
+----
 
 assuming, that your `libs` directory exists on the same level as your project directory.
