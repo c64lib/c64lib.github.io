@@ -3,9 +3,7 @@ jobs:
   deploy:
     docker:
       - image: circleci/jruby:latest
-#      - image: circleci/ruby:3.0.0
     steps:
-      - run: sudo apt install graphviz
       - checkout
       - run: bundle install
       - run: bash ./build.sh
@@ -24,3 +22,4 @@ workflows:
             branches:
               only:
                 - master
+                - develop
