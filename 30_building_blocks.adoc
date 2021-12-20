@@ -75,9 +75,11 @@ This will however consume a lot of memory (in sense of generated machine code) i
 Macros are declared in `.asm` files located under `lib` directory.
 
 == Subroutines
+Subroutine is a consistent set of assembly instructions that performs concrete operation.
+The major difference between plain macro and subroutine is that macro is used to substitute commonly used patterns of intructions (at cost of growing machine code size) and subroutine is used to save on machine code size actually.
 
 === Regular subroutines
-As subroutine we understand a piece of ML code that can be used by jumping there with jsr operation.
+As subroutine we understand a piece of ML code that can be used by jumping there with `jsr` operation.
 A subroutine always ends with rts which means that at the end of execution program counter will be restored to the position right after original `jsr` operation and code execution will continue.
 In this sense a subroutine is an equivalent of procedure, function or method in high level programming languages.
 
@@ -87,7 +89,7 @@ With `c64lib` we basically share subroutine code just by writing piece of `asm` 
 Subroutines are declared in `.asm` files located under `lib/dir` subdirectory.
 Each subroutine consists of appropriate rts operation so that it should always be accessed with corresponding `jsr` operation.
 If soubroutine consumes input parameters, they should be set accordingly before `jsr` is executed.
-Depending on the parameter passing method it should be either register setup (that is A, X or Y), memory location setup or pushing to the stack.
+Depending on the parameter passing method it should be either register setup (that is `A`, `X` or `Y`), memory location setup or pushing to the stack.
 For stack method there is a convenience library invoke available.
 
 A subroutine code should be imported in place where it needs to be located - we don't do it at the top of the source file but rather we use `#import` directive exactly in place where we want to have our subroutine.
