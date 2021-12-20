@@ -1,18 +1,23 @@
-= C64Lib - user manual
+= c64lib - User's Manual
 :icons: font
 :toc: left
 :sectnums:
 :stylesheet: clean.css
 :source-highlighter: highlight.js
 :highlightjs-languages: assembly
+:kickass-version: 5.23
+:rbt-version: 1.5.1
+:c64lib-version: 0.3.0
 
 WARNING: This document is under development!
 
-The C64Lib is a set of Kick Assembler macros grouped in several libraries. They are the building blocks that can be reused in retro projects. The intention behind C64Lib is to provide retro community with modern development tools such as build support, CI assistance, dependency management, artifact versioning and comprehensive documentation.
+The C64Lib is a set of Kick Assembler macros grouped in several libraries.
+They are the building blocks that can be reused in retro projects.
+The intention behind C64Lib is to provide retro community with modern development tools such as build support, CI assistance, dependency management, artifact versioning and comprehensive documentation.
 
-include::10_overview.adoc[]
+include::10_overview.adoc[leveloffset=+1]
 
-include::20_install.adoc[]
+include::20_install.adoc[leveloffset=+1]
 
 include::30_building_blocks.adoc[leveloffset=+1]
 

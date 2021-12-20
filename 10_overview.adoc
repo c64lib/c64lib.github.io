@@ -1,5 +1,6 @@
-== Overview
-The C64Lib project consists of multiple libraries. Each library is hosted as separate GitHub repository and is plugged into CircleCI build system for Continuous Integration.
+= Overview
+The `c64lib` project consists of multiple libraries.
+Each library is hosted as separate GitHub repository and is plugged into CircleCI build system for Continuous Integration.
 
 There are following core libraries:
 

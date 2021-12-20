@@ -1,11 +1,66 @@
 = Functional guidelines
-== Subroutines and subroutine invocation
+
+== Subroutines
+
+== Subroutine invocation
+
+The `common` library contains helper macros for implementing subroutine invocation.
+These macros basically handle parameter passing via the stack which are then stored in dedicated memory (usually allocated in unused part of the subroutine).
+This technique is especially handy in case the overall size of the input data cannot be realistically passed via CPU registers.
+Recursive calls to the subroutines are not supported.
+
+Parameters should be pushed onto the stack just before calling subroutine (which is done via `jsr` instruction).
+Within the subroutine, parameters must be fetched from the stack in reverse order and stored elsewhere.
+Before this is done, a return pointer must be preserved in order to enable return from the subroutine (a `rts` instruction).
+There are two macros devoted to this operation: `invokeStackBegin` and `invokeStackEnd`. These are actually combined with `pullParam` and `pushParam`.
+
+[source,asm]
+----
+pushParamW()
+pushParamW()
+jsr rotateMemRight
+
+// ...
+
+rotateMemRight: {
+
+  invokeStackBegin(returnPtr)
+  pullParamWList(List().add(loadFirst, loadNext, staNext, staLast))
+
+  lda loadFirst:$ffff, x
+  sta preserve
+  loop:
+    dex
+    lda loadNext:$ffff, x
+    inx
+    sta staNext:$ffff, x
+    dex
+  bne loop
+  lda preserve
+  sta staLast:$ffff
+
+  invokeStackEnd(returnPtr)
+  rts
+  // local vars
+  returnPtr:      .word 0
+  preserve:       .byte 0
+}
+----
+
 == Memory operations
+
 == 16-bits math
+
 == Commodore 64 memory layout management
+
 == VIC-II memory layout management
+
 == VIC-II NTSC detection
+
 == VIC-II IRQ handling
+
 == Text scrolling
+
 == 2x2 scrollable background
+
 == Copper64
