@@ -10,25 +10,5 @@ copper64:: Utility library that makes raster interrupt programming on VIC-II ple
 
 The diagram below describes dependencies between internal libraries of `c64lib` project. There is also an excellent `64spec` testing library used and shown as external reference.
 
-[plantuml, library-dependencies, png]
-....
-skinparam handwritten true
-top to bottom direction
-
-Package #white 64spec
-Package c64lib {
-    Package common
-    Package chipset
-    Package text
-    Package copper64
-}
-
-c64lib .up.> 64spec
-chipset .left..> common
-text .up..> common
-text ...> chipset
-copper64 .up..> common
-copper64 .right..> chipset
-copper64 .right..> text
-....
+image::img/c64lib-deps.png[]
 
