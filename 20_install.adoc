@@ -44,21 +44,21 @@ libDirs = [".ra/deps/c64lib"]
 
 The complete `gradle.build` will be following:
 
-[source,groovy]
+[source,groovy,subs="attributes"]
 ----
 plugins {
-    id "com.github.c64lib.retro-assembler" version "1.5.1"
+    id "com.github.c64lib.retro-assembler" version "{rbt-version}"
 }
 
 retroProject {
     dialect = "KickAssembler"
-    dialectVersion = "5.23"
+    dialectVersion = "{kickass-version}"
     libDirs = [".ra/deps/c64lib"]
 
-    libFromGitHub "c64lib/common", "0.3.0"
-    libFromGitHub "c64lib/chipset", "0.3.0"
-    libFromGitHub "c64lib/text", "0.3.0"
-    libFromGitHub "c64lib/copper64", "0.3.0"
+    libFromGitHub "c64lib/common", "{c64lib-version}"
+    libFromGitHub "c64lib/chipset", "{c64lib-version}"
+    libFromGitHub "c64lib/text", "{c64lib-version}"
+    libFromGitHub "c64lib/copper64", "{c64lib-version}"
 }
 ----
 
@@ -93,7 +93,7 @@ gradle wrapper
 
 then you add `gradle.build` file using following content (or similar):
 
-[source,groovy]
+[source,groovy,subs="attributes"]
 ----
 plugins {
     id "com.github.c64lib.retro-assembler" version "{rbt-version}"
@@ -167,7 +167,7 @@ If you then specify `-libdir` parameter to the KickAss appropriately, you'll be 
 As mentioned earlier, checkout from `master` branch ensures that last released version of library is used.
 If you want to change it and use concrete version from the past, after `git clone` you have to enter the cloned directory (i.e. `cd common`) and checkout desired version:
 
-[source,bash]
+[source,bash,subs="attributes"]
 ----
 git checkout {c64lib-version}
 ----
