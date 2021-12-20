@@ -10,11 +10,15 @@ WARNING: This document is under development!
 
 The C64Lib is a set of Kick Assembler macros grouped in several libraries. They are the building blocks that can be reused in retro projects. The intention behind C64Lib is to provide retro community with modern development tools such as build support, CI assistance, dependency management, artifact versioning and comprehensive documentation.
 
-include::_overview.adoc[]
+include::10_overview.adoc[]
 
-include::_install.adoc[]
+include::20_install.adoc[]
 
-== Library reference
+include::30_building_blocks.adoc[leveloffset=+1]
 
-include::_lib-common.adoc[leveloffset=+2]
+include::40_functional_guidelines.adoc[leveloffset=+1]
+
+include::70_contribute.adoc[leveloffset=+1]
+
+include::80_reference.adoc[leveloffset=+1]
 

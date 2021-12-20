@@ -9,10 +9,10 @@ Well, when you are a happy user of Retro Assembler plugin, then you are even hap
 
 [source,groovy]
 ----
-libFromGitHub "c64lib/common", "0.1.0"
-libFromGitHub "c64lib/chipset", "0.1.0"
-libFromGitHub "c64lib/text", "0.1.0"
-libFromGitHub "c64lib/copper64", "0.1.0"
+libFromGitHub "c64lib/common", "0.3.0"
+libFromGitHub "c64lib/chipset", "0.3.0"
+libFromGitHub "c64lib/text", "0.3.0"
+libFromGitHub "c64lib/copper64", "0.3.0"
 ----
 
 Then you will be able to use all four libraries from `c64lib`. Of course not all four are mandatory. You can use any subset of them as long as you obey dependency graph as shown in [here][libraries].
@@ -35,24 +35,18 @@ The complete `gradle.build` will be following:
 [source,groovy]
 ----
 plugins {
-    id "com.github.c64lib.retro-assembler" version "1.0.1"
+    id "com.github.c64lib.retro-assembler" version "1.5.1"
 }
-
-repositories {
-    jcenter()
-}
-
-apply plugin: "com.github.c64lib.retro-assembler"
 
 retroProject {
     dialect = "KickAssembler"
-    dialectVersion = "5.9"
+    dialectVersion = "5.23"
     libDirs = [".ra/deps/c64lib"]
 
-    libFromGitHub "c64lib/common", "0.1.0"
-    libFromGitHub "c64lib/chipset", "0.1.0"
-    libFromGitHub "c64lib/text", "0.1.0"
-    libFromGitHub "c64lib/copper64", "0.1.0"
+    libFromGitHub "c64lib/common", "0.3.0"
+    libFromGitHub "c64lib/chipset", "0.3.0"
+    libFromGitHub "c64lib/text", "0.3.0"
+    libFromGitHub "c64lib/copper64", "0.3.0"
 }
 ----
 

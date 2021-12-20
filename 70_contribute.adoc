@@ -1,0 +1,3 @@
+= Contribute
+== Coding standards
+== Branching and versioning strategy

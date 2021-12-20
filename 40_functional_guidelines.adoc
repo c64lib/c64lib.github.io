@@ -1,0 +1,11 @@
+= Functional guidelines
+== Subroutines and subroutine invocation
+== Memory operations
+== 16-bits math
+== Commodore 64 memory layout management
+== VIC-II memory layout management
+== VIC-II NTSC detection
+== VIC-II IRQ handling
+== Text scrolling
+== 2x2 scrollable background
+== Copper64
