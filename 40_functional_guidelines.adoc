@@ -227,9 +227,26 @@ jsr copyLargeMemForward
 
 ====
 
-=== Comparisons
-
 == 16-bit math
+The `common` library helper macros helps with common math related operations.
+They "extend" a basic set of math opcodes used to do arithmetics with macros and pseudocommands that operates on two-byte sized values (words).
+
+.Related sources
+--
+* `c64lib/common/lib/math.asm`.
+* `c64lib/common/lib/math-global.asm`.
+--
+
+=== Increments, decrements
+You can easily increment and decrement 16-bit counters using following macros:
+
+[source,asm]
+inc16($2000) // increments counter located in $2000,$2001
+
+[source,asm]
+dec16($3000) // decrements counter located in $3000,$3001
+
+=== Adding, subtraction
 
 == Far conditional jumps
 
