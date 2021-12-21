@@ -267,12 +267,57 @@ addMem16($B000, $C000)
 Well known limitation of MOS 6502 machine code is that conditional jump instructions use 1 byte for relative jump shift.
 This means that if you want to jump too far, you have to use conditional / absolute jump combination, which is cumbersome.
 
+.Related sources
+--
+* `c64lib/common/lib/common.asm`.
+* `c64lib/common/lib/common-global.asm`.
+--
+
 The `c64lib` offers few macros that can simplify this task:
 
 fbne(label):: It calculates the jump length and if it is too far it replaces simple `bne` with `beq`/`jmp` combination.
 fbmi(label):: It calculates the jump length and if it is too far it replaces simple `bmi` with `bpl`/`beq`\`jmp` combination.
 
 == Commodore 64 memory layout management
+The Commodore 64 is known to have extremely flexible memory layout configuration.
+The `c64lib` library provides simple macro to change memory configuration in single line of code.
+
+.Related sources
+--
+* `c64lib/chipset/lib/mos6510.asm`.
+* `c64lib/chipset/lib/mos6510-global.asm`.
+--
+
+To change memory configuration one can run `configureMemory(config)` macro, where config can have one of the following values:
+
+* `RAM_RAM_RAM`
+* `RAM_CHAR_RAM`
+* `RAM_CHAR_KERNAL`
+* `BASIC_CHAR_KERNAL`
+* `RAM_IO_RAM`
+* `RAM_IO_KERNAL`
+* `BASIC_IO_KERNAL`
+
+The `BASIC_IO_KERNAL` is an initial value after C64 is being powered on.
+Names of the labels above are self explanatory: each section represents one of switchable region: RAM or BASIC, RAM/IO/CHARSET and RAM or KERNAL.
+
+.Switching to the most useful memory layout
+====
+You usually don't need BASIC and KERNAL but still want IO region to be banked in.
+
+You have to ensure that interrupts are disabled during configuration process.
+You would like to disable default interrupt sources (as KERNAL is banked out the interrupt vectors are too).
+
+[source, asm]
+----
+sei
+c64lib_disableNMI()
+c64lib_configureMemory(c64lib.RAM_IO_RAM)
+c64lib_disableCIAInterrupts()
+cli
+----
+
+====
 
 == VIC-II memory layout management
 
