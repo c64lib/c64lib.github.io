@@ -247,6 +247,21 @@ inc16($2000) // increments counter located in $2000,$2001
 dec16($3000) // decrements counter located in $3000,$3001
 
 === Adding, subtraction
+You can add / subtract value to / from a value stored in memory via `add16` and `sub16` macros.
+
+In example to add `315` to the value stored under `$B000`:
+[source, asm]
+add16(315, $B000)
+
+Alternatively you can use `add16` and `sub16` pseudocommands:
+[source, asm]
+add16 $B000 : $C000
+
+You can add / subtract value stored in one memory address to / from a value stored in another memory address via `addMem16` and `subMem16`, respectively.
+
+In example to add value from address `$B000:$B001` to the value from address `$C000:$C001`:
+[source, asm]
+addMem16($B000, $C000)
 
 == Far conditional jumps
 
