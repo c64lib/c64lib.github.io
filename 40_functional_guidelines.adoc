@@ -268,8 +268,9 @@ Well known limitation of MOS 6502 machine code is that conditional jump instruct
 This means that if you want to jump too far, you have to use conditional / absolute jump combination, which is cumbersome.
 
 The `c64lib` offers few macros that can simplify this task:
-`fbne(label)`:: It calculates the jump length and if it is too far it replaces simple `bne` with `beq`/`jmp` combination.
-`fbmi(label)`:: It calculates the jump length and if it is too far it replaces simple `bmi` with `bpl`/`beq`\`jmp` combination.
+
+fbne(label):: It calculates the jump length and if it is too far it replaces simple `bne` with `beq`/`jmp` combination.
+fbmi(label):: It calculates the jump length and if it is too far it replaces simple `bmi` with `bpl`/`beq`\`jmp` combination.
 
 == Commodore 64 memory layout management
 
