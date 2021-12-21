@@ -29,6 +29,12 @@ We'll call this method a hybrid invocation.
 The `common` library contains helper macros for parameter passing via the stack.
 Recursive calls to the subroutines are not supported.
 
+.Related sources
+--
+* `c64lib/common/lib/invoke.asm`.
+* `c64lib/common/lin/invoke-global.asm`.
+--
+
 Parameters should be pushed onto the stack just before calling subroutine (which is done via `jsr` instruction).
 Within the subroutine, parameters must be fetched from the stack in reverse order and stored elsewhere.
 Before this is done, a return pointer must be preserved in order to enable return from the subroutine (a `rts` instruction).
@@ -62,6 +68,7 @@ pushParamW($4000)
 pushParamW(1024)
 jsr copyLargeMemForward
 ----
+
 ====
 
 The subroutine, once being called, must do the following:
@@ -115,13 +122,154 @@ It uses self modifying code technique and copies input address directly into fou
   preserve:       .byte 0
   }
 ----
+
 It is noteworthy, that semi-local variables are declared as additional 3 bytes at the end of the subroutine (guarded by preceding `rts` instruction).
 These variables are used to preserve return address and additional single byte for rotation.
 ====
 
 == Memory operations
+The `common` library helper macros helps with common memory related operations.
 
-== 16-bits math
+.Related sources
+--
+* `c64lib/common/lib/mem.asm`.
+* `c64lib/common/lib/mem-global.asm`.
+--
+
+=== Setting the memory
+There are a bunch of `set*` pseudocommands that can be used to quickly set given memory cells to some value.
+The `set8` works with 1-byte values, the `set16` works with 2-byte values (words).
+
+The following sets content of memory address `$B000` to `0`:
+[source,asm]
+set8 #0 : $B000
+
+The following sets content of memory address `$C000` to a value stored under address `$0F`:
+[source,asm]
+set8 $0F : $B000
+
+It is also possible to set two consecutive bytes to a given 2-byte value, but one needs to use the following macro for that (sets `$B000` to `$02` and `$B001` to `$01`):
+[source,asm]
+set16($0102, $B000)
+
+There is also a macro for setting one byte value which can be used as long as immediate addressing is needed:
+[source,asm]
+set8($01, $B000)
+
+In order to fill specified memory block with given value a `fillMem` subroutine can be used.
+
+.Filling memory with a value.
+====
+In order to use this subroutine import it and place a label before it so it can be called later.
+
+[source,asm]
+----
+fillMem: #import "common/lib/sub/fill-mem.asm"
+----
+
+This subroutine uses hybrid invocation, push start address of the memory block into the stack and set value in `A` and block size in `X`.
+As you see, this subroutine is limited to 255 as maximum size of the block.
+
+The following code can be used to fill `200` bytes of memory starting from `$B000` address with value `0`.
+
+[source,asm]
+----
+pushParamW($B000)
+lda #0
+ldx #200
+jsr fillMem
+----
+====
+
+=== Memory transfer
+
+You can use `copy8` pseudocommand to copy one byte from one place to another using `A`:
+
+[source,asm]
+copy8 $B000:$C000
+
+You can use `copy16` pseudocommand to copy two consecuive bytes from one place to another:
+
+[source,asm]
+copy16 $B000:$C000
+
+For fast, unrolled copying of data block use `copyFast` macro.
+To copy `20` bytes from `$B000` to `$C000` use the following:
+
+[source,asm]
+copyFast($B000, $C000, 20)
+
+Remember, that `copyFast` macro will consume a lot of space if count parameter (the last one) will be big.
+
+There is a "slow" copy subroutine that is handy for "unpacking" a PRG file and moving arbitrary sized blocks of data to the target location.
+This subroutine can be used to move SID data (music) into target location as well as to move VIC-II data (charsets, sprites) into the VIC-II addressable bank.
+Target and source spaces can overlap as long as target address is bigger than source address.
+
+.Copying large blocks of data
+====
+In order to use this subroutine import it and place a label before, so that it can be called later.
+
+[source,asm]
+copyLargeMemForward: #import "common/lib/sub/copy-large-mem-forward.asm"
+
+This subroutine requires three WORD parameters to be placed on stack:
+* source address
+* target address
+* data size (can be more than 256)
+
+[source,asm]
+----
+pushParamW($A000)
+pushParamW($E000)
+pushParamW(1024)
+jsr copyLargeMemForward
+----
+
+====
+
+== 16-bit math
+The `common` library helper macros helps with common math related operations.
+They "extend" a basic set of math opcodes used to do arithmetics with macros and pseudocommands that operates on two-byte sized values (words).
+
+.Related sources
+--
+* `c64lib/common/lib/math.asm`.
+* `c64lib/common/lib/math-global.asm`.
+--
+
+=== Increments, decrements
+You can easily increment and decrement 16-bit counters using following macros:
+
+[source,asm]
+inc16($2000) // increments counter located in $2000,$2001
+
+[source,asm]
+dec16($3000) // decrements counter located in $3000,$3001
+
+=== Adding, subtraction
+You can add / subtract value to / from a value stored in memory via `add16` and `sub16` macros.
+
+In example to add `315` to the value stored under `$B000`:
+[source, asm]
+add16(315, $B000)
+
+Alternatively you can use `add16` and `sub16` pseudocommands:
+[source, asm]
+add16 $B000 : $C000
+
+You can add / subtract value stored in one memory address to / from a value stored in another memory address via `addMem16` and `subMem16`, respectively.
+
+In example to add value from address `$B000:$B001` to the value from address `$C000:$C001`:
+[source, asm]
+addMem16($B000, $C000)
+
+== Far conditional jumps
+Well known limitation of MOS 6502 machine code is that conditional jump instructions use 1 byte for relative jump shift.
+This means that if you want to jump too far, you have to use conditional / absolute jump combination, which is cumbersome.
+
+The `c64lib` offers few macros that can simplify this task:
+`fbne(label)`:: It calculates the jump length and if it is too far it replaces simple `bne` with `beq`/`jmp` combination.
+`fbmi(label)`:: It calculates the jump length and if it is too far it replaces simple `bmi` with `bpl`/`beq`\`jmp` combination.
 
 == Commodore 64 memory layout management
 
@@ -130,6 +278,8 @@ These variables are used to preserve return address and additional single byte f
 == VIC-II NTSC detection
 
 == VIC-II IRQ handling
+
+== Text outputting
 
 == Text scrolling
 

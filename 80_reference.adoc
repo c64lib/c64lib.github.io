@@ -2,30 +2,3 @@
 
 WARNING: This section is incomplete and will be rewritten soon.
 
-== Common
-:source-highlighter: highlight.js
-:highlightjs-languages: asm
-
-
-This is a core utility library for C64lib. It is written in KickAssembler but in general it contains only the code that is portable and can be used with other architectures based on MOS 6502 (such as VIC 20, C128, 8-bit Atari etc).
-
-=== common.asm
-
-==== neg
-
-==== incArgument
-
-==== Far jumps
-
-A set of macros that are handy if we are not sure if at given moment a near jump is feasible, or a "far conditional jump" trick should be used.
-
-fbmi:: Far `bmi` branch. Depending on the effective jump distance it uses either `bmi` or `bpl`/`beq`/`jmp` combination.
-fbne:: Far `bne` branch. Depending on the effective jump distance it uses either `bne` or `beq`/`jmp` trick.
-
-
-=== invoke.asm
-
-
-=== math.asm
-
-=== mem.asm
