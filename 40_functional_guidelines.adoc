@@ -29,6 +29,12 @@ We'll call this method a hybrid invocation.
 The `common` library contains helper macros for parameter passing via the stack.
 Recursive calls to the subroutines are not supported.
 
+.Related sources
+--
+* `c64lib/common/lib/invoke.asm`.
+* `c64lib/common/lin/invoke-global.asm`.
+--
+
 Parameters should be pushed onto the stack just before calling subroutine (which is done via `jsr` instruction).
 Within the subroutine, parameters must be fetched from the stack in reverse order and stored elsewhere.
 Before this is done, a return pointer must be preserved in order to enable return from the subroutine (a `rts` instruction).
@@ -120,8 +126,64 @@ These variables are used to preserve return address and additional single byte f
 ====
 
 == Memory operations
+The `common` library helper macros helps with common memory related operations.
 
-== 16-bits math
+.Related sources
+--
+* `c64lib/common/lib/mem.asm`.
+* `c64lib/common/lib/mem-global.asm`.
+--
+
+=== Setting the memory
+There are a bunch of `set*` pseudocommands that can be used to quickly set given memory cells to some value.
+The `set8` works with 1-byte values, the `set16` works with 2-byte values (words).
+
+The following sets content of memory address `$B000` to `0`:
+[source,asm]
+set8 #0 : $B000
+
+The following sets content of memory address `$C000` to a value stored under address `$0F`:
+[source,asm]
+set8 $0F : $B000
+
+It is also possible to set two consecutive bytes to a given 2-byte value, but one needs to use the following macro for that (sets `$B000` to `$02` and `$B001` to `$01`):
+[source,asm]
+set16($0102, $B000)
+
+There is also a macro for setting one byte value which can be used as long as immediate addressing is needed:
+[source,asm]
+set8($01, $B000)
+
+In order to fill specified memory block with given value a `fillMem` subroutine can be used.
+
+.Filling memory with a value.
+====
+In order to use this subroutine import it and place a label before it so it can be called later.
+
+[source,asm]
+----
+fillMem: #import "common/lib/sub/fill-mem.asm"
+----
+
+This subroutine uses hybrid invocation, push start address of the memory block into the stack and set value in `A` and block size in `X`.
+As you see, this subroutine is limited to 255 as maximum size of the block.
+
+The following code can be used to fill `200` bytes of memory starting from `$B000` address with value `0`.
+
+[source,asm]
+----
+pushParamW($B000)
+lda #0
+ldx #200
+jsr fillMem
+----
+====
+
+=== Memory transfer
+
+== 16-bit math
+
+== Far conditional jumps
 
 == Commodore 64 memory layout management
 
