@@ -1,4 +1,3 @@
 = Library reference
 
 WARNING: This section is incomplete and will be rewritten soon.
-
