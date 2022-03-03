@@ -27,6 +27,8 @@ include::30_building_blocks.adoc[leveloffset=+1]
 
 include::40_functional_guidelines.adoc[leveloffset=+1]
 
+include::50_copper_64.adoc[leveloffset=+1]
+
 include::70_contribute.adoc[leveloffset=+1]
 
 include::80_reference.adoc[leveloffset=+1]

@@ -339,7 +339,7 @@ The following code:
 c64lib_setVICBank(c64lib.BANK3)
 ----
 
-sets up the last memory bank ($C000-$FFFF) for VIC-II graphic chip.
+sets up the last memory bank (`$C000`-`$FFFF`) for VIC-II graphic chip.
 
 === VIC-II memory layout management
 
@@ -353,4 +353,3 @@ sets up the last memory bank ($C000-$FFFF) for VIC-II graphic chip.
 
 == 2x2 scrollable background
 
-== Copper64
