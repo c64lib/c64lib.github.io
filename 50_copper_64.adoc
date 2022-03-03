@@ -1,1 +1,39 @@
 = Copper 64
+
+The Coppper 64 library is a tool that eases complex raster-related effects that can be achieved by Commodore 64.
+
+Raster-related effects are all effects that are triggered at certain raster line.
+The Commodore 64 and its VIC-II chip can be programmed in a way so that CPU is interrupted once certain raster line of the screen is drawn by CRT (or LCD).
+If this interrupt then performs certain actions, sometimes even by reprogramming of VIC-II itself, a wide variety of interesting effects can be achieved:
+
+* splitting the screen into two or more pieces each using different screen mode or addressing,
+* extending amount of visible colours by changing global colour registers of VIC-II,
+* extending amount of visible sprites by reusing eight available sprite slots in different regions of the screen (so-called sprite multiplexing),
+* displaying colorful raster bars or achieving "rainbow fonts",
+* performing certain video-RAM operations at given moments to achieve smooth scrolling,
+* doing any "background task" that requires regular update such as playing music or incrementing timers,
+* and many more...
+
+Usually you need to perform various raster-relation actions at once, on single screen.
+This means that you need to perform several different handling code for several different raster times.
+Unfortunately, the VIC-II chip and its interrupt system allows just to specify single raster value at a time - that is, you can only trigger an interrupt at single line.
+
+This is a limitation that can be overcame: all you need to do is to reprogram VIC-II raster register at the end of interrupt handling method, maybe also reprogram IRQ vector of MOS 6502 so that the VIC-II will execute second IRQ handler at second position.
+Of course, you have to reprogram raster register at the end of the second IRQ handler, the same needs to be done for IRQ vector.
+This way you have two distinct IRQ handlers fired at two distinct raster positions.
+
+This approach can be generalized to N handlers and raster positions.
+Of course at each time you have to ensure that:
+
+. Raster position grows except the very last position which should reset to the lowest raster at the end.
+. You have to ensure that IRQ handler have enough time to execute itself (the next raster position must be big enough so that we have enough cycles to execute the whole IRQ handler).
+
+Not conforming to any of the rules above results in effect called "frame-skips", that is the VIC-II will display the whole frame before next handler will be run.
+
+Futhermore, the MOS 6502 are unstable by default, that is, it is usually hard to predict when exactly the code execution by the CPU will be interrupted.
+Some visual effects are affected by this problem, prominently screen splits and raster bars.
+Special programming techniques including code cycling and double interrupts are used to mitigate this problem.
+
+The Copper 64 library solves most of these problems.
+It is configured via special table allowing to specify various effects being triggered at raster lines.
+The design of this library has been inspired by Amiga's Copper chip (and so-called Copper list) or 8-bit Atari's display list.
