@@ -83,3 +83,36 @@ For values from range `$01` - `$FE` the bits of the control byte have following 
 | `5` | Reserved, should be 0.
 | `4..0` | IRQ Function - 1..31.
 |===
+
+There are two macros that can be used to simplify copper table definition:
+
+`copperEntry`:: Creates single effect line of copper list. This macro takes following arguments: `raster` - raster counter (9 bits), `function` - IRQ handler code, `data1` - first byte of function data, `data2` - second byte of function data.
+`copperLoop`:: Is used to finish copper list - the copper 64 wraps to the first line once loop line is detected. This macro does not take any arguments.
+
+== Copper 64 main subroutine
+
+The main Copper 64 subroutine must be preconfigured using hosted subroutine approach.
+
+Copper 64 requires three bytes from zero page: two subsequent bytes to store copper list address and one byte for copper list pointer.
+
+Install main subroutine with following macro call:
+
+[source,asm]
+----
+.label COPPER_LIST_ADDR = $10
+.label COPPER_LIST_PTR = $12
+
+startCopper(
+    COPPER_LIST_ADDR,
+    COPPER_LIST_PTR,
+    List().add(c64lib.IRQH_JSR, c64lib.IRQH_BG_RASTER_BAR, c64lib.IRQH_BG_COL_0).lock())
+----
+
+Note that all three location on the zero page can be freely configured via first and second parameter of the macro call.
+
+As the third argument you have to pass a locked list of all IRQ handlers you are going to use in copper list.
+That is, even though Copper 64 supports more than dozen of different effects, only few of them can be used at once (this limitation is caused by the fact, that Copper 64 is cycled to achieve stable effects, therefore all handlers must fit into single page of memory).
+
+Once hosted subroutine is installed and configured, you can make call to it, ensuring that firstly you set up copper list address into appropriate zero page location.
+This way you can easily reuse the same main subroutine for different copper list, this works well as long as you use the same set of IRQ handlers in all of these lists.
+If by any reason you cannot use the same list of IRQ handlers (because i.e. they do not fit into 256 bytes of memory), you have to configure and install main subroutine twice.
