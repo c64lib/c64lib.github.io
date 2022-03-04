@@ -1,0 +1,118 @@
+= Copper 64
+
+The Coppper 64 library is a tool that eases complex raster-related effects that can be achieved by Commodore 64.
+
+Raster-related effects are all effects that are triggered at certain raster line.
+The Commodore 64 and its VIC-II chip can be programmed in a way so that CPU is interrupted once certain raster line of the screen is drawn by CRT (or LCD).
+If this interrupt then performs certain actions, sometimes even by reprogramming of VIC-II itself, a wide variety of interesting effects can be achieved:
+
+* splitting the screen into two or more pieces each using different screen mode or addressing,
+* extending amount of visible colours by changing global colour registers of VIC-II,
+* extending amount of visible sprites by reusing eight available sprite slots in different regions of the screen (so-called sprite multiplexing),
+* displaying colorful raster bars or achieving "rainbow fonts",
+* performing certain video-RAM operations at given moments to achieve smooth scrolling,
+* doing any "background task" that requires regular update such as playing music or incrementing timers,
+* and many more...
+
+Usually you need to perform various raster-relation actions at once, on single screen.
+This means that you need to perform several different handling code for several different raster times.
+Unfortunately, the VIC-II chip and its interrupt system allows just to specify single raster value at a time - that is, you can only trigger an interrupt at single line.
+
+This is a limitation that can be overcame: all you need to do is to reprogram VIC-II raster register at the end of interrupt handling method, maybe also reprogram IRQ vector of MOS 6502 so that the VIC-II will execute second IRQ handler at second position.
+Of course, you have to reprogram raster register at the end of the second IRQ handler, the same needs to be done for IRQ vector.
+This way you have two distinct IRQ handlers fired at two distinct raster positions.
+
+This approach can be generalized to N handlers and raster positions.
+Of course at each time you have to ensure that:
+
+. Raster position grows except the very last position which should reset to the lowest raster at the end.
+. You have to ensure that IRQ handler have enough time to execute itself (the next raster position must be big enough so that we have enough cycles to execute the whole IRQ handler).
+
+Not conforming to any of the rules above results in effect called "frame-skips", that is the VIC-II will display the whole frame before next handler will be run.
+
+Futhermore, the MOS 6502 are unstable by default, that is, it is usually hard to predict when exactly the code execution by the CPU will be interrupted.
+Some visual effects are affected by this problem, prominently screen splits and raster bars.
+Special programming techniques including code cycling and double interrupts are used to mitigate this problem.
+
+The Copper 64 library solves most of these problems.
+It is configured via special table allowing to specify various effects being triggered at raster lines.
+The design of this library has been inspired by Amiga's Copper chip (and so-called Copper list) or 8-bit Atari's display list.
+
+.Related sources
+--
+* `c64lib/copper64/lib/copper64.asm`.
+* `c64lib/copper64/lin/copper64-global.asm`.
+--
+
+== Defining Copper table
+
+Copper table is a block of memory containing copper entries, 4 bytes each.
+
+.Copper 64 entry definition
+[cols="1,1,3"]
+|===
+| Byte offset | Name | Description
+
+| 0 | Control | Control byte serving different purposes (see below).
+| 1 | Raster | Lower 8 bits of raster line address.
+| 2 | Data 1 | First byte of data.
+| 3 | Data 2 | Second byte of data.
+|===
+
+The control byte has multiple purposes depending on its value:
+
+.Control value
+[cols="1,3"]
+|===
+| Control value | Description
+
+| `$00` | Stop execution of the copper list.
+| `$FF` | End of the copper list (start from the beginning - loop).
+| `$01` - `$FE` | Execute function (see below).
+|===
+
+For values from range `$01` - `$FE` the bits of the control byte have following meanings.
+
+.Function selector structure
+[cols="1,3"]
+|===
+| Bit | Description
+
+| `7` | Nineth bit of the raster line address.
+| `6` | Reserved, should be 0.
+| `5` | Reserved, should be 0.
+| `4..0` | IRQ Function - 1..31.
+|===
+
+There are two macros that can be used to simplify copper table definition:
+
+`copperEntry`:: Creates single effect line of copper list. This macro takes following arguments: `raster` - raster counter (9 bits), `function` - IRQ handler code, `data1` - first byte of function data, `data2` - second byte of function data.
+`copperLoop`:: Is used to finish copper list - the copper 64 wraps to the first line once loop line is detected. This macro does not take any arguments.
+
+== Copper 64 main subroutine
+
+The main Copper 64 subroutine must be preconfigured using hosted subroutine approach.
+
+Copper 64 requires three bytes from zero page: two subsequent bytes to store copper list address and one byte for copper list pointer.
+
+Install main subroutine with following macro call:
+
+[source,asm]
+----
+.label COPPER_LIST_ADDR = $10
+.label COPPER_LIST_PTR = $12
+
+startCopper(
+    COPPER_LIST_ADDR,
+    COPPER_LIST_PTR,
+    List().add(c64lib.IRQH_JSR, c64lib.IRQH_BG_RASTER_BAR, c64lib.IRQH_BG_COL_0).lock())
+----
+
+Note that all three location on the zero page can be freely configured via first and second parameter of the macro call.
+
+As the third argument you have to pass a locked list of all IRQ handlers you are going to use in copper list.
+That is, even though Copper 64 supports more than dozen of different effects, only few of them can be used at once (this limitation is caused by the fact, that Copper 64 is cycled to achieve stable effects, therefore all handlers must fit into single page of memory).
+
+Once hosted subroutine is installed and configured, you can make call to it, ensuring that firstly you set up copper list address into appropriate zero page location.
+This way you can easily reuse the same main subroutine for different copper list, this works well as long as you use the same set of IRQ handlers in all of these lists.
+If by any reason you cannot use the same list of IRQ handlers (because i.e. they do not fit into 256 bytes of memory), you have to configure and install main subroutine twice.

@@ -319,7 +319,29 @@ cli
 
 ====
 
-== VIC-II memory layout management
+== VIC-II memory management
+
+=== Configuring VIC-II memory bank
+Configuration of which one out of four C64 memory banks is addressable by VIC-II chip can be done via reprogramming the CIA-2 chip.
+
+.Related sources
+--
+* `c64lib/chipset/lib/cia.asm`.
+* `c64lib/chipset/lib/cia-global.asm`.
+--
+
+The change can be done via `setVICBank`\`c64lib_setVICBank` macro.
+
+The following code:
+
+[source,asm]
+----
+c64lib_setVICBank(c64lib.BANK3)
+----
+
+sets up the last memory bank (`$C000`-`$FFFF`) for VIC-II graphic chip.
+
+=== VIC-II memory layout management
 
 == VIC-II NTSC detection
 
@@ -331,4 +353,3 @@ cli
 
 == 2x2 scrollable background
 
-== Copper64
