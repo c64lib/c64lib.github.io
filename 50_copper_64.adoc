@@ -116,3 +116,304 @@ That is, even though Copper 64 supports more than dozen of different effects, on
 Once hosted subroutine is installed and configured, you can make call to it, ensuring that firstly you set up copper list address into appropriate zero page location.
 This way you can easily reuse the same main subroutine for different copper list, this works well as long as you use the same set of IRQ handlers in all of these lists.
 If by any reason you cannot use the same list of IRQ handlers (because i.e. they do not fit into 256 bytes of memory), you have to configure and install main subroutine twice.
+
+== Stop Copper 64 subroutine
+
+Basically you have to stop IRQ to have Copper 64 deactivated, or reprogram IRQ vector, or both.
+You can use the following macro to just turn VIC-II initiated IRQ off:
+
+[source,asm]
+----
+stopCopper()
+----
+
+== Copper 64 effects
+
+=== Set border color
+Changes border color.
+
+* __Handler label:__ `IRQH_BORDER_COL`
+* __Handler code:__ `1`
+* __Argument 1:__ desired border color; `0..15`
+* __Argument 2:__ unused
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_BORDER_COL, <color>, 0)
+----
+
+=== Set background color 0
+Changes background color 0.
+
+* __Handler label:__ `IRQH_BG_COL_0`
+* __Handler code:__ `2`
+* __Argument 1:__ desired background 0 color; `0..15`
+* __Argument 2:__ unused
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_BG_COL_0, <color>, 0)
+----
+
+=== Set background color 1
+Changes background color 1.
+
+* __Handler label:__ `IRQH_BG_COL_1`
+* __Handler code:__ `3`
+* __Argument 1:__ desired background 1 color; `0..15`
+* __Argument 2:__ unused
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_BG_COL_1, <color>, 0)
+----
+
+=== Set background color 2
+Changes background color 2.
+
+* __Handler label:__ `IRQH_BG_COL_2`
+* __Handler code:__ `4`
+* __Argument 1:__ desired background 2 color; `0..15`
+* __Argument 2:__ unused
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_BG_COL_2, <color>, 0)
+----
+
+=== Set background color 3
+Changes background color 3.
+
+* __Handler label:__ `IRQH_BG_COL_3`
+* __Handler code:__ `5`
+* __Argument 1:__ desired background 3 color; `0..15`
+* __Argument 2:__ unused
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_BG_COL_3, <color>, 0)
+----
+
+=== Set border and background 0 color uniformly
+Changes background color 0 and border color to the same color.
+
+* __Handler label:__ `IRQH_BORDER_BG_0_COL`
+* __Handler code:__ `6`
+* __Argument 1:__ desired color for border and background 0; `0..15`
+* __Argument 2:__ unused
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_BORDER_BG_0_COL, <color>, 0)
+----
+
+=== Set border and background 0 color separately
+Changes background color 0 and border color to another values in single step, the colors are specified as arguments.
+
+* __Handler label:__ `IRQH_BORDER_BG_0_DIFF`
+* __Handler code:__ `7`
+* __Argument 1:__ desired color for border; `0..15`
+* __Argument 2:__ desired color for background 0; `0..15`
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_BORDER_BG_0_DIFF, <border color>, <background color>)
+----
+
+=== Set VIC memory register and VIC memory bank
+Changes VIC memory control and VIC memory bank in one step.
+
+* __Handler label:__ `IRQH_MEM_BANK`
+* __Handler code:__ `8`
+* __Argument 1:__ value for `MEMORY_CONTROL` register
+* __Argument 2:__ value for VIC bank (goes to `CIA2_DATA_PORT_A`); only two least significant bits are taken, other bits of the data port are preserved
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_MEM_BANK, <memory control>, <vic bank number>)
+----
+
+=== Set VIC mode and memory settings
+Changes VIC display mode and memory settings in one step. VIC bank cannot be changed.
+
+* __Handler label:__ `IRQH_MODE_MEM`
+* __Handler code:__ `9`
+* __Argument 1:__ mode of vic2; for performance reasons the values for two control registers are packed in one byte: `%00010000` for Multicolor, `%01100000` for ECM or Bitmap
+* __Argument 2:__ value for `MEMORY_CONTROL` register
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_MODE_MEM, <vic mode>, <memory control>)
+----
+
+=== Jump to custom subroutine
+Jumps to custom subroutine that can do whatever you want, i.e. play music. Subroutine must end with `rts`.
+
+* __Handler label:__ `IRQH_JSR`
+* __Handler code:__ `10`
+* __Argument 1:__ Low byte of subroutine address
+* __Argument 2:__ High byte of subroutine address
+* __Cycled:__ no
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_JSR, <address, >address)
+----
+
+=== Set hires bitmap mode
+Sets up hires bitmap mode using given memory layout and VIC bank. Useful for screen splits using totally different memory locations for VIC chip.
+
+* __Handler label:__ `IRQH_MODE_HIRES_BITMAP`
+* __Handler code:__ `11`
+* __Argument 1:__ value for `MEMORY_CONTROL` register
+* __Argument 2:__ value for VIC bank (goes to `CIA2_DATA_PORT_A`); only two least significant bits are taken, other bits of the data port are preserved
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_MODE_HIRES_BITMAP, <memory control>, <vic bank number>)
+----
+
+=== Set multicolor mode
+Sets up multicolor bitmap mode using given memory layout and VIC bank. Useful for screen splits using totally different memory locations for VIC chip.
+
+* __Handler label:__ `IRQH_MODE_MULTIC_BITMAP`
+* __Handler code:__ `12`
+* __Argument 1:__ value for `MEMORY_CONTROL` register
+* __Argument 2:__ value for VIC bank (goes to `CIA2_DATA_PORT_A`); only two least significant bits are taken, other bits of the data port are preserved
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_MODE_MULTIC_BITMAP, <memory control>, <vic bank number>)
+----
+
+=== Set hires text mode
+Sets up hires text mode using given memory layout and VIC bank. Useful for screen splits using totally different memory locations for VIC chip.
+
+* __Handler label:__ `IRQH_MODE_HIRES_TEXT`
+* __Handler code:__ `13`
+* __Argument 1:__ value for `MEMORY_CONTROL` register
+* __Argument 2:__ value for VIC bank (goes to `CIA2_DATA_PORT_A`); only two least significant bits are taken, other bits of the data port are preserved
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_MODE_HIRES_TEXT, <memory control>, <vic bank number>)
+----
+
+=== Set multicolor text mode
+Sets up multicolor text mode using given memory layout and VIC bank. Useful for screen splits using totally different memory locations for VIC chip.
+
+* __Handler label:__ `IRQH_MODE_MULTIC_TEXT`
+* __Handler code:__ `14`
+* __Argument 1:__ value for `MEMORY_CONTROL` register
+* __Argument 2:__ value for VIC bank (goes to `CIA2_DATA_PORT_A`); only two least significant bits are taken, other bits of the data port are preserved
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_MODE_MULTIC_TEXT, <memory control>, <vic bank number>)
+----
+
+=== Set extended background mode
+Sets up extended text mode using given memory layout and VIC bank. Useful for screen splits using totally different memory locations for VIC chip.
+
+* __Handler label:__ `IRQH_MODE_EXTENDED_TEXT`
+* __Handler code:__ `15`
+* __Argument 1:__ value for `MEMORY_CONTROL` register
+* __Argument 2:__ value for VIC bank (goes to `CIA2_DATA_PORT_A`); only two least significant bits are taken, other bits of the data port are preserved
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_MODE_EXTENDED_TEXT, <memory control>, <vic bank number>)
+----
+
+=== Full raster bar
+Generates colorful raster bar across whole screen including border. Color for each subsequent bar line is fetched from `$FF` terminated array of colors (values `0..15`). Because procedure is cycled using busy waiting on raster, a raster time for whole bar will be consumed. Color array can be cycled or modified in any way to get interesting animation effects.
+
+* __Handler label:__ `IRQH_FULL_RASTER_BAR`
+* __Handler code:__ `16`
+* __Argument 1:__ Low byte of bar color definition address
+* __Argument 2:__ High byte of bar color definition address
+* __Cycled:__ yes (PAL, 63 cycles) - it sucks on badlines however
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_FULL_RASTER_BAR, <address, >address)
+----
+
+=== Background-only raster bar
+Generates colorful raster bar across whole background. Color for each subsequent bar line is fetched from `$FF` terminated array of colors (values `0..15`). Because procedure is cycled using busy waiting on raster, a raster time for whole bar will be consumed. Color array can be cycled or modified in any way to get interesting animation effects.
+
+* __Handler label:__ `IRQH_BG_RASTER_BAR`
+* __Handler code:__ `17`
+* __Argument 1:__ Low byte of bar color definition address
+* __Argument 2:__ High byte of bar color definition address
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_BG_RASTER_BAR, <colorCycleDef, >colorCycleDef)
+...
+colorCycleDef:  .byte COLOR_3, LIGHT_RED, RED, LIGHT_RED, YELLOW, WHITE, YELLOW, YELLOW, COLOR_3, $ff
+----
+
+=== Horizontal scroll
+Scrolls screen horizontally using specified amount of pixels.
+
+* __Handler label:__ `IRQH_HSCROLL`
+* __Handler code:__ `17`
+* __Argument 1:__ value for horizontal scroll register (`0..7`)
+* __Argument 2:__ unused
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_HSCROLL, <scroll value>, 0)
+----
+
+=== Mapped horizontal scroll
+Applies shallow tech-tech effect (using values `0..7`) starting from given raster position. Horizontal scroll value for each corresponding raster line is taken from `$FF` terminated array of values, each should contain value from `0..7` range. The scroll map can be further modified (i.e. rotated) to achieve interesting animation effects.
+
+* __Handler label:__ `IRQH_HSCROLL_MAP`
+* __Handler code:__ `17`
+* __Argument 1:__ low byte of scroll map definition address
+* __Argument 2:__ high value of scroll map definition address
+* __Cycled:__ yes (PAL, 63 cycles)
+
+Usage:
+[source,asm]
+----
+copperEntry(<raster>, c64lib.IRQH_HSCROLL_MAP, <hscrollMapDef, >hscrollMapDef)
+...
+hscrollMapDef:  .fill TECH_TECH_WIDTH, round(3.5 + 3.5*sin(toRadians(i*360/TECH_TECH_WIDTH))) ; .byte 0; .byte $ff
+----
