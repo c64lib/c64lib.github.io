@@ -417,3 +417,56 @@ copperEntry(<raster>, c64lib.IRQH_HSCROLL_MAP, <hscrollMapDef, >hscrollMapDef)
 ...
 hscrollMapDef:  .fill TECH_TECH_WIDTH, round(3.5 + 3.5*sin(toRadians(i*360/TECH_TECH_WIDTH))) ; .byte 0; .byte $ff
 ----
+
+== Examples
+
+=== Level screen for a TRex-64 game
+
+We would like to display a new level screen for a computer game.
+This screen should play background music, display some information and handle controls to start the game when player is ready.
+Lets consider the following requirements:
+
+. Music player should be triggered once per frame.
+. Regular font used on this screen should use "rainbow font" effect using smooth shades of grey.
+. Get ready text should use different shades (yellow and red like fire) which is additionally animated by cycling the rainbow.
+. We need a counter that can be used to calculate delay - this is required to handle keyboard input properly.
+
+image::img/copper64-trex-level.png[]
+
+The whole screen can be built using following copper table:
+
+[source,asm]
+----
+copperEntry(10, IRQH_JSR, <playMusic, >playMusic)
+copperEntry(80, IRQH_JSR, <scrollColorCycle2, >scrollColorCycle2)
+copperEntry(124, IRQH_BG_RASTER_BAR, <colorCycle1, >colorCycle1)
+copperEntry(140, IRQH_BG_RASTER_BAR, <colorCycle2, >colorCycle2)
+copperEntry(156, IRQH_BG_RASTER_BAR, <colorCycle1, >colorCycle1)
+copperEntry(245, IRQH_JSR, <dly_handleDelay, >dly_handleDelay)
+copperLoop()
+----
+
+For background raster bar effect we use following arrays defining color cycles:
+
+[source,asm]
+----
+colorCycle1: .byte GREY, GREY, GREY, LIGHT_GREY, WHITE, WHITE, LIGHT_GREY, GREY, GREY, BLACK, $ff
+colorCycle2: .byte BLACK, LIGHT_RED, RED, LIGHT_RED, YELLOW, YELLOW, WHITE, YELLOW, YELLOW, BLACK, $ff
+----
+
+Additionally, the content of `colorCycle2` array is rotated using the following code, that is triggered by second entry of the copper table:
+
+[source,asm]
+----
+scrollColorCycle2: {
+  dec z_colorCycleDelay2
+  bne !+
+    lda #COLOR_CYCLE_DELAY
+    sta z_colorCycleDelay2
+    rotateMemRightFast(colorCycle2 + 1, 6)
+  !:
+  rts
+}
+----
+
+Note that it is essential, that last byte of the colour cycle entry is the same as the screen colour (`BLACK` in this case) - this restores bg colour of the screen remainder.
