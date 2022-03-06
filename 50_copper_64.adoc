@@ -422,7 +422,7 @@ hscrollMapDef:  .fill TECH_TECH_WIDTH, round(3.5 + 3.5*sin(toRadians(i*360/TECH_
 
 === Level screen for a TRex-64 game
 
-We would like to display a new level screen for a computer game.
+We would like to display a new level screen for a https://maciejmalecki.itch.io/trex64[video game].
 This screen should play background music, display some information and handle controls to start the game when player is ready.
 Lets consider the following requirements:
 
@@ -437,13 +437,14 @@ The whole screen can be built using following copper table:
 
 [source,asm]
 ----
-copperEntry(10, IRQH_JSR, <playMusic, >playMusic)
-copperEntry(80, IRQH_JSR, <scrollColorCycle2, >scrollColorCycle2)
-copperEntry(124, IRQH_BG_RASTER_BAR, <colorCycle1, >colorCycle1)
-copperEntry(140, IRQH_BG_RASTER_BAR, <colorCycle2, >colorCycle2)
-copperEntry(156, IRQH_BG_RASTER_BAR, <colorCycle1, >colorCycle1)
-copperEntry(245, IRQH_JSR, <dly_handleDelay, >dly_handleDelay)
-copperLoop()
+copperList:
+    copperEntry(10, IRQH_JSR, <playMusic, >playMusic)
+    copperEntry(80, IRQH_JSR, <scrollColorCycle2, >scrollColorCycle2)
+    copperEntry(124, IRQH_BG_RASTER_BAR, <colorCycle1, >colorCycle1)
+    copperEntry(140, IRQH_BG_RASTER_BAR, <colorCycle2, >colorCycle2)
+    copperEntry(156, IRQH_BG_RASTER_BAR, <colorCycle1, >colorCycle1)
+    copperEntry(245, IRQH_JSR, <dly_handleDelay, >dly_handleDelay)
+    copperLoop()
 ----
 
 For background raster bar effect we use following arrays defining color cycles:
@@ -470,3 +471,65 @@ scrollColorCycle2: {
 ----
 
 Note that it is essential, that last byte of the colour cycle entry is the same as the screen colour (`BLACK` in this case) - this restores bg colour of the screen remainder.
+
+Also note, that "rainbow" font effect requires inverted charset to be used, because rainbow is done via rasterbar effect on background colour.
+
+The Copper 64 main subroutine can be configured in following way:
+
+[source,asm]
+----
+startCoopper:
+  startCopper(
+    $03,
+    $05,
+    List().add(c64lib.IRQH_JSR, c64lib.IRQH_BG_RASTER_BAR).lock())
+----
+
+Main subroutine can be then started multiple time using the following code:
+
+[source,asm]
+----
+  lda #<copperList
+  sta $03
+  lda #>copperList
+  sta $04
+  jsr startCopper
+----
+
+As shown above, the Copper 64 subroutine can be easily reused with different copper lists as long as the same effects are used.
+All to be done is to set up copper list address which is in this example stored in addresses `$03` and `$04`.
+
+=== Title screen for a TRex-64 game
+
+The title screen for the TRex-64 video game uses rainbow fonts, both static and animated as well as fade in/fade out effect on credits/instruction text.
+The fade effect is also done with background colour, so also inverted charset must be used to hide all parts of the background that shouldn't be visible.
+
+image::img/copper64-trex-title.png[]
+
+This screen is implemented with following copper list:
+
+[source,asm]
+----
+titleScreenCopperList:
+        copperEntry(10, IRQH_JSR, <playMusic, >playMusic)
+        copperEntry(80, IRQH_JSR, <scrollColorCycle2, >scrollColorCycle2)
+    fadeEffectColor:
+        copperEntry(166, IRQH_BG_COL_0, BLACK, 0)
+        copperEntry(190, IRQH_JSR, <rotateColors, >rotateColors)
+        copperEntry(206, IRQH_BG_COL_0, BLACK, 0)
+        copperEntry(235, IRQH_BG_RASTER_BAR, <colorCycle2, >colorCycle2)
+        copperEntry(250, IRQH_JSR, <dly_handleDelay, >dly_handleDelay)
+        copperEntry(261, IRQH_JSR, <handleCredits, >handleCredits)
+        copperLoop()
+----
+
+In this example we see that copper list can be modified in runtime.
+Here we modify the background colour at the begining of the fade in section.
+In another place (`handleCredits`) we modify this value with simple:
+
+[source,asm]
+----
+    sta fadeEffectColor + 2
+----
+
+Just each time you want to fade in or out, we have to change colours according to special fade in / fade out array of colours.
