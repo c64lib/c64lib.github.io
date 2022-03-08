@@ -533,3 +533,81 @@ In another place (`handleCredits`) we modify this value with simple:
 ----
 
 Just each time you want to fade in or out, we have to change colours according to special fade in / fade out array of colours.
+
+=== Supporting both PAL and NTSC
+
+We all know that NTSC on C64 is hard, because there are far less raster lines per frame (due to the fact that VIC-II does 60Hz vs 50Hz in PAL).
+But what is even harder and more awkward: while PAL version has 0 raster line at the very top of the screen, the raster 0 on NTSC is near at the bottom.
+
+For PAL we do have 312 raster lines, and v-blank starts at 300 (the very bottom of the visible screen area).
+for NTSC we have 263 raster lines, v-blank starts at line 13 (so raster lines 0 to 12 are visible at the very bottom of the screen).
+So, lets assume we would like to set up an interrupt at the line 251 (PAL).
+To have this interrupt to be triggered in exactly the same place on NTSC, we do need to set it up in line 1.
+
+Therefore in order to make our copper list work equally well on PAL and NTSC we do have to:
+
+. Detect which machine are we running on (PAL / NTSC).
+. Modify copper list accordingly (change 251 to 1 if on NTSC).
+
+Let's consider following copper list:
+[source,asm]
+----
+ingameCopperList:
+    copperEntry(DASHBOARD_Y + 20, IRQH_JSR, <upperMultiplex, >upperMultiplex) // 50 + 20 = 70
+    copperEntry(77, IRQH_JSR, <playMusicIrq, >playMusicIrq)
+  scrollCode:
+    copperEntry(103, IRQH_JSR, <scrollBackground, >scrollBackground)
+  switchPagesCode:
+    copperEntry(280, IRQH_JSR, <switchPages, >switchPages)
+    copperLoop()
+----
+
+We see that the last raster line is way beyond of the NTSC display capabilities.
+In fact, IRQ at 280 will never be triggered on NTSC machine.
+In short, the following raster table will not work there.
+We have to detect NTSC and modify the table accordingly.
+
+[source,asm]
+----
+startIngameCopper: {
+  lda #<ingameCopperList
+  sta z_displayListPtr
+  lda #>ingameCopperList
+  sta z_displayListPtr + 1
+
+  lda z_ntsc
+  bne ntsc
+  jmp !+
+  ntsc: {
+    // for NTSC we want to change raster counter for last IRQ handler (switch pages)
+    lda #8
+    sta switchPagesCode + 1
+    lda switchPagesCode
+    and #%01111111
+    sta switchPagesCode
+  }
+  !:
+    jsr startCopper
+  rts
+}
+----
+
+Note that we have to change both byte 0 and 1 of the copper list entry - this is because we have to also clear bit 9 of the raster counter, which is stored in control byte.
+
+To detect NTSC we can use the following code:
+
+[source,asm]
+----
+setNTSC: {
+  lda #1
+  sta z_ntsc
+  rts
+}
+
+detectNTSC: {
+  lda #0
+  sta z_ntsc
+  detectNtsc(0, setNTSC)
+  rts
+}
+----
