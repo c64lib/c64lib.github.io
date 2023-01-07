@@ -14,7 +14,7 @@ Well, when you are a happy user of Retro Assembler plugin, then you are even hap
 The `c64lib` is a GitHub project, so it can be added as GitHub dependency to your `gradle.build` file.
 Put the following lines into your `retroProject` section of the build file:
 
-[source,groovy]
+[source,groovy,subs="attributes"]
 ----
 libFromGitHub "c64lib/common", "{c64lib-version}"
 libFromGitHub "c64lib/chipset", "{c64lib-version}"
