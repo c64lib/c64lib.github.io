@@ -286,6 +286,7 @@ It is particularly useful for data consisting of repetitive patterns of bytes su
 --
 * `c64lib/common/lib/compress.asm`
 * `c64lib/common/lib/compress-global.asm`
+--
 
 One can call `compressRLE(data)` macro that crunches provided data *during compilation* of program.
 Such data must be loaded with `LoadBinary(filename)` function.
