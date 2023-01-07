@@ -386,15 +386,42 @@ Their meaning is different depending on the screen mode.
 For text modes it would be screen memory and charset memory.
 For bitmap modes it would be screen memory and bitmap memory.
 
-
-
 == VIC-II NTSC detection
 
 == VIC-II IRQ handling
 
 == Text outputting
+The `text` library offers macros and subroutines to output texts and numbers.
+
+.Related sources
+--
+* `c64lib/text/lib/text.asm`.
+* `c64lib/text/lib/text-global.asm`.
+* `c64lib/text/lib/sub/out-hex-nibble.asm`.
+* `c64lib/text/lib/sub/out-hex.asm`.
+--
+
+The `outTextXYC` outputs text terminated with `$FF` that is no longer than 255 characters.
+As it is a macro-hosted subroutine, it must be instantiated with screen and color RAM address first.
+Such subroutine can be then to output different texts at different screen position and with different color.
+
+[source, asm]
+----
+myOutTextXYC: c64lib_outTextXYC($1000, $D800)
+
+text: .text "Commodore 64"; .byte $ff
+
+c64lib_pushParamW(text)
+ldx #5
+ldy #12
+lda #LIGHT_GREEN
+jsr myOutTextXYC
+----
 
 == Text scrolling
 
+coming soon
+
 == 2x2 scrollable background
 
+coming soon
