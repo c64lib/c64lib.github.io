@@ -11,5 +11,5 @@ copper64:: Utility library that makes raster interrupt programming on VIC-II ple
 
 The diagram below describes dependencies between internal libraries of `c64lib` project. There is also an excellent `64spec` testing library used and shown as external reference.
 
-image::img/c64lib-deps.png[]
+image::img/c64lib-deps.excalidraw.png[]
 
