@@ -278,6 +278,44 @@ The `c64lib` offers few macros that can simplify this task:
 fbne(label):: It calculates the jump length and if it is too far it replaces simple `bne` with `beq`/`jmp` combination.
 fbmi(label):: It calculates the jump length and if it is too far it replaces simple `bmi` with `bpl`/`beq`\`jmp` combination.
 
+== Handling of RLE compression
+The `c64lib` supports very basic yet useful compression method called RLE.
+It is particularly useful for data consisting of repetitive patterns of bytes such as simple graphics, game maps and so on.
+
+.Related sources
+--
+* `c64lib/common/lib/compress.asm`
+* `c64lib/common/lib/compress-global.asm`
+
+One can call `compressRLE(data)` macro that crunches provided data *during compilation* of program.
+Such data must be loaded with `LoadBinary(filename)` function.
+
+Compressed data can be decompressed (and relocated) with `decompressRLE` subroutine.
+
+[source,asm]
+decompressRLE: #import "common/lib/sub/decompress_rle.asm"
+
+This subroutine requires three WORD parameters to be placed on stack:
+* source address
+* target address
+
+[source,asm]
+----
+.var data = LoadBinary("data-to-be-compressed.bin")
+
+sourceAddress: c64lib_compressRLE(data)
+
+// ...
+
+pushParamW(sourceAddress)
+pushParamW(targetAddress)
+jsr decompressRLE
+
+// ...
+
+targetAddress:
+----
+
 == Commodore 64 memory layout management
 The Commodore 64 is known to have extremely flexible memory layout configuration.
 The `c64lib` library provides simple macro to change memory configuration in single line of code.
@@ -343,13 +381,65 @@ sets up the last memory bank (`$C000`-`$FFFF`) for VIC-II graphic chip.
 
 === VIC-II memory layout management
 
+There are two distinct memory areas that have to be fconfigured for VIC-II.
+Their meaning is different depending on the screen mode.
+For text modes it would be screen memory and charset memory.
+For bitmap modes it would be screen memory and bitmap memory.
+
 == VIC-II NTSC detection
 
 == VIC-II IRQ handling
 
 == Text outputting
+The `text` library offers macros and subroutines to output texts and numbers.
+
+.Related sources
+--
+* `c64lib/text/lib/text.asm`.
+* `c64lib/text/lib/text-global.asm`.
+* `c64lib/text/lib/sub/out-hex-nibble.asm`.
+* `c64lib/text/lib/sub/out-hex.asm`.
+--
+
+The `outTextXYC` outputs text terminated with `$FF` that is no longer than 255 characters.
+As it is a macro-hosted subroutine, it must be instantiated with screen and color RAM addresses first.
+Such subroutine can be then used to output different texts at different screen position and with different color.
+
+[source, asm]
+----
+myOutTextXYC: c64lib_outTextXYC($1000, $D800)
+
+text: .text "Commodore 64"; .byte $ff
+
+c64lib_pushParamW(text)
+ldx #5
+ldy #12
+lda #LIGHT_GREEN
+jsr myOutTextXYC
+----
+
+The `outNumberXYC` outputs two digit number (a byte).
+As this is a macro-hosted subroutine, it must be instantiated with screen and color RAM addresses first.
+Such subroutine can be then used to output numbers at different screen position and with different color.
+This subroutine displays bytes in hexadecimal form unless number is BCD packed.
+
+[source, asm]
+----
+myOutNumberXYC: c64lib_outNumberXYC($1000, $D800)
+
+number: .byte 3*16 + 6
+
+c64lib_pushParamW(number)
+ldx #5
+ldy #12
+lda #LIGHT_GREEN
+jsr myOutNumberXYC // displays 36 at (5,12) using light green color
+----
 
 == Text scrolling
 
+coming soon
+
 == 2x2 scrollable background
 
+coming soon
