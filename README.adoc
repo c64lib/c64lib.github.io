@@ -1,3 +1,0 @@
-= C64LIB - User Manual
-
-https://c64lib.github.io/[]

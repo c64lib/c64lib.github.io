@@ -1,0 +1,2745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.14">
+<meta name="author" content="Version 0.4.0">
+<title>c64lib - User&#8217;s Manual</title>
+<style>
+/* Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
+
+@import url("//fonts.googleapis.com/css?family=Noto+Sans:300,600italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700");
+@import url(https://cdn.jsdelivr.net/gh/asciidoctor/asciidoctor@2.0/data/stylesheets/asciidoctor-default.css); /* Default asciidoc style framework - important */
+
+/* CUSTOMISATIONS */
+/* Change the values in root for quick customisation. If you want even more fine grain... venture further. */
+
+:root{
+--maincolor:#FFFFFF;
+--primarycolor:#2c3e50;
+--secondarycolor:#ba3925;
+--tertiarycolor: #186d7a;
+--sidebarbackground:#CCC;
+--linkcolor:#b71c1c;
+--linkcoloralternate:#f44336;
+--white:#FFFFFF;
+--black:#000000;
+}
+
+/* Text styles */
+h1{color:var(--primarycolor) !important;}
+h2,h3,h4,h5,h6{color:var(--secondarycolor) !important;}
+.title{color:var(--tertiarycolor) !important; font-family:"Noto Sans",sans-serif !important;font-style: normal !important; font-weight: normal !important;}
+p{font-family: "Noto Sans",sans-serif !important}
+
+/* Table styles */
+th{font-family: "Noto Sans",sans-serif !important}
+
+/* Responsiveness fixes */
+video {
+  max-width: 100%;
+}
+
+@media all and (max-width: 600px) {
+table {
+  width: 55vw!important;
+  font-size: 3vw;
+}
+
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/styles/github.min.css">
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-113535243-4"></script>
+<script>
+  var useCookies = (localStorage.getItem('useCookies') === 'true');
+  if (useCookies) {
+    window.dataLayer = window.dataLayer || [];
+    function gtag () {
+      dataLayer.push(arguments);
+    }
+    gtag('js', new Date());
+    gtag('config', 'UA-113535243-4', { 'anonymize_ip': true });
+  }
+</script>
+<style>
+  div#gdpr {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    margin: 1em 1em;
+    padding: 1em;
+    background: whitesmoke;
+    box-shadow: 5px 5px 2px lightgray;
+    text-align: center;
+    z-index: 1010;
+  }
+  div#gdpr>p {
+    margin: 0.1em;
+  }
+</style>
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>c64lib - User&#8217;s Manual</h1>
+<div class="details">
+<span id="author" class="author">Version 0.4.0</span><br>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_overview">1. Overview</a></li>
+<li><a href="#_installation">2. Installation</a>
+<ul class="sectlevel2">
+<li><a href="#_using_gradle_as_a_build_tool">2.1. Using Gradle as a build tool</a></li>
+<li><a href="#_manual_clone_from_github">2.2. Manual clone from GitHub</a></li>
+<li><a href="#_manual_copy">2.3. Manual copy</a></li>
+</ul>
+</li>
+<li><a href="#_building_blocks">3. Building blocks</a>
+<ul class="sectlevel2">
+<li><a href="#_the_c64lib_namespace">3.1. The c64lib namespace</a></li>
+<li><a href="#_global_imports">3.2. Global imports</a></li>
+<li><a href="#_labels">3.3. Labels</a></li>
+<li><a href="#_functions">3.4. Functions</a></li>
+<li><a href="#_macros">3.5. Macros</a></li>
+<li><a href="#_subroutines">3.6. Subroutines</a></li>
+</ul>
+</li>
+<li><a href="#_functional_guidelines">4. Functional guidelines</a>
+<ul class="sectlevel2">
+<li><a href="#_subroutines_2">4.1. Subroutines</a></li>
+<li><a href="#_passing_parameters_to_subroutines">4.2. Passing parameters to subroutines</a></li>
+<li><a href="#_memory_operations">4.3. Memory operations</a></li>
+<li><a href="#_16_bit_math">4.4. 16-bit math</a></li>
+<li><a href="#_far_conditional_jumps">4.5. Far conditional jumps</a></li>
+<li><a href="#_handling_of_rle_compression">4.6. Handling of RLE compression</a></li>
+<li><a href="#_commodore_64_memory_layout_management">4.7. Commodore 64 memory layout management</a></li>
+<li><a href="#_vic_ii_memory_management">4.8. VIC-II memory management</a></li>
+<li><a href="#_vic_ii_ntsc_detection">4.9. VIC-II NTSC detection</a></li>
+<li><a href="#_vic_ii_irq_handling">4.10. VIC-II IRQ handling</a></li>
+<li><a href="#_text_outputting">4.11. Text outputting</a></li>
+<li><a href="#_text_scrolling">4.12. Text scrolling</a></li>
+<li><a href="#_2x2_scrollable_background">4.13. 2x2 scrollable background</a></li>
+</ul>
+</li>
+<li><a href="#_copper_64">5. Copper 64</a>
+<ul class="sectlevel2">
+<li><a href="#_defining_copper_table">5.1. Defining Copper table</a></li>
+<li><a href="#_copper_64_main_subroutine">5.2. Copper 64 main subroutine</a></li>
+<li><a href="#_stop_copper_64_subroutine">5.3. Stop Copper 64 subroutine</a></li>
+<li><a href="#_copper_64_effects">5.4. Copper 64 effects</a></li>
+<li><a href="#_examples">5.5. Examples</a></li>
+</ul>
+</li>
+<li><a href="#_contribute">6. Contribute</a>
+<ul class="sectlevel2">
+<li><a href="#_coding_standards">6.1. Coding standards</a></li>
+<li><a href="#_branching_and_versioning_strategy">6.2. Branching and versioning strategy</a></li>
+</ul>
+</li>
+<li><a href="#_library_reference">7. Library reference</a></li>
+<li><a href="#_privacy_disclaimer">8. Privacy disclaimer</a>
+<ul class="sectlevel2">
+<li><a href="#_how_do_we_process_your_data">8.1. How do we process your data</a></li>
+<li><a href="#_google_analytics">8.2. Google Analytics</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+This document is under development!
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The <code>c64lib</code> is a set of Kick Assembler macros grouped in several libraries.
+They are the building blocks that can be reused in retro projects.
+The intention behind <code>c64lib</code> is to provide retro community with modern development tools such as build support, CI assistance, dependency management, artifact versioning and comprehensive documentation.</p>
+</div>
+<div class="paragraph">
+<p>The <code>c64lib</code> is hosted on GitHub: <a href="https://github.com/c64lib/" class="bare">https://github.com/c64lib/</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_overview">1. Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>c64lib</code> project consists of multiple libraries.
+Each library is hosted as separate GitHub repository and is plugged into CircleCI build system for Continuous Integration.</p>
+</div>
+<div class="paragraph">
+<p>There are following core libraries:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">common</dt>
+<dd>
+<p>The one that hosts some commonly used functions, macros and subroutines; no other <code>c64lib</code> library can work without it. This code is intended to be platform-independent, it complies to typical MOS 6502 assembler syntax (except it is written in KickAss, which is C64 specific at the moment).</p>
+</dd>
+<dt class="hdlist1">chipset</dt>
+<dd>
+<p>The one that hosts code that is platform specific and is dedicated to handle typical C64 chipset such as VIC-II, SID, CIA as well as typical C64 memory layout.</p>
+</dd>
+<dt class="hdlist1">text</dt>
+<dd>
+<p>The one that handles displaying text in text mode of Commodore 64 / VIC-II.</p>
+</dd>
+<dt class="hdlist1">copper64</dt>
+<dd>
+<p>Utility library that makes raster interrupt programming on VIC-II pleasant and easy.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>The diagram below describes dependencies between internal libraries of <code>c64lib</code> project. There is also an excellent <code>64spec</code> testing library used and shown as external reference.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/c64lib-deps.excalidraw.png" alt="c64lib deps.excalidraw">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_installation">2. Installation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>c64lib</code> is a set of libraries that can be used in assembly programs written with Kick Assembler.
+Each library consists of one or more source files that shall be then imported in Kick Assembler program.
+There are several methods of downloading and "installation" of libraries, some of them will be presented there starting from the most convenient one.</p>
+</div>
+<div class="sect2">
+<h3 id="_using_gradle_as_a_build_tool">2.1. Using Gradle as a build tool</h3>
+<div class="paragraph">
+<p>The easiest way to use <code>c64lib</code> is to add the libraries as dependencies to the gradle build.
+It is an easy task due to Retro Build Tool.</p>
+</div>
+<div class="paragraph">
+<p>The complete manual for Retro Build Tool is available at: <a href="https://c64lib.github.io/gradle-retro-assembler-plugin/" class="bare">https://c64lib.github.io/gradle-retro-assembler-plugin/</a>.</p>
+</div>
+<div class="sect3">
+<h4 id="_when_gradle_is_already_used">2.1.1. When Gradle is already used</h4>
+<div class="paragraph">
+<p>Well, when you are a happy user of Retro Assembler plugin, then you are even happier, because it&#8217;s extremely easy to add C64Lib to your project.
+The <code>c64lib</code> is a GitHub project, so it can be added as GitHub dependency to your <code>gradle.build</code> file.
+Put the following lines into your <code>retroProject</code> section of the build file:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">libFromGitHub "c64lib/common", "0.4.0"
+libFromGitHub "c64lib/chipset", "0.4.0"
+libFromGitHub "c64lib/text", "0.4.0"
+libFromGitHub "c64lib/copper64", "0.4.0"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then you will be able to use all four libraries from <code>c64lib</code>.
+Of course not all four are mandatory.
+You can use any subset of them as long as you obey dependency graph as shown in <a href="#_overview">Overview</a>.</p>
+</div>
+<div class="paragraph">
+<p>Retro Assembler plugin downloads all dependencies into default location:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>.ga/deps</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>All libraries from <code>c64lib</code> will be downloaded under <code>c64lib</code> subfolder therefore the following location:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>.ga/deps/c64lib</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>must be added to the lib dir so that Kick Assembler will see them when interpreting <code>#import</code> directive.
+The following must be also a part of your <code>gradle.build</code> file:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">libDirs = [".ra/deps/c64lib"]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The complete <code>gradle.build</code> will be following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
+    id "com.github.c64lib.retro-assembler" version "1.6.0"
+}
+
+retroProject {
+    dialect = "KickAssembler"
+    dialectVersion = "5.25"
+    libDirs = [".ra/deps/c64lib"]
+
+    libFromGitHub "c64lib/common", "0.4.0"
+    libFromGitHub "c64lib/chipset", "0.4.0"
+    libFromGitHub "c64lib/text", "0.4.0"
+    libFromGitHub "c64lib/copper64", "0.4.0"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In order to build your executable you just need to execute gradle:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">./gradlew</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">./gradlew build</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In result C64 executables (a <code>prg</code> files) will be created.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_when_gradle_is_not_used">2.1.2. When Gradle is not used</h4>
+<div class="paragraph">
+<p>but you really want to start using it, you have to enable it first.
+Following steps are requires as preconditions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Download and install JDK 8 or higher.</p>
+</li>
+<li>
+<p>Download and install Gradle.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Once it is done, you have to restart your console/terminal application and go to your project location.
+In your location you run Gradle to install a wrapper:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">gradle wrapper</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>then you add <code>gradle.build</code> file using following content (or similar):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
+    id "com.github.c64lib.retro-assembler" version "1.6.0"
+}
+
+retroProject {
+    dialect = "KickAssembler"
+    dialectVersion = "5.25"
+    libDirs = [".ra/deps/c64lib"]
+
+    libFromGitHub "c64lib/common", "0.4.0"
+    libFromGitHub "c64lib/chipset", "0.4.0"
+    libFromGitHub "c64lib/text", "0.4.0"
+    libFromGitHub "c64lib/copper64", "0.4.0"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Of course, the set of used libraries (with <code>libFromGitHub</code> element) may vary as well as the version of Kick Assembler.</p>
+</div>
+<div class="paragraph">
+<p>And that&#8217;s it: from now on you are able to build your project using simple <code>gradlew</code> or <code>gradlew build</code> commands. It&#8217;s not even necessary to have Gradle installed. All you need is Java 8 or higher.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_manual_clone_from_github">2.2. Manual clone from GitHub</h3>
+<div class="paragraph">
+<p>If you don&#8217;t want to or cannot use Retro Assembler plugin, you can use your git client and clone libraries manually and then just point the location with <code>-libdir</code> parameter of the KickAss.</p>
+</div>
+<div class="paragraph">
+<p>Lets assume your project has following directory layout on the disk:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>work
+  |--libs
+  +--project
+       |--SomeFile.asm
+       +--SomeOtherFile.asm</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then you go to the <code>libs</code> directory (<code>cd work/libs</code>), and then clone as many libraries from <code>c64lib</code> as you need:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">git clone https://github.com/c64lib/common.git
+git clone https://github.com/c64lib/chipset.git
+git clone https://github.com/c64lib/text.git
+git clone https://github.com/c64lib/copper64.git</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will checkout latest released version of the library (actually a top of the <code>master</code> branch, which usually means the same).
+In result, you will get something like this:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>work
+  |--libs
+  |    +--common
+  |         +--lib
+  |              |--common.asm
+  |              |--invoke.asm
+  |              |--invoke-global.asm
+  |              |--math.asm
+  |              |--math-global.asm
+  |              |--mem.asm
+  |              +--mem-global.asm
+  |    +--chipset
+  |         |--...
+  |    +--text
+  |         |--...
+  |    +--copper64
+  |         |--...
+  +--project
+       |--SomeFile.asm
+       +--SomeOtherFile.asm</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you then specify <code>-libdir</code> parameter to the KickAss appropriately, you&#8217;ll be able to use the libs (asm files in <code>lib</code> directory) with simple <code>#import</code> directive, i.e.:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#import "common/lib/math-global.asm"</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>As mentioned earlier, checkout from <code>master</code> branch ensures that last released version of library is used.
+If you want to change it and use concrete version from the past, after <code>git clone</code> you have to enter the cloned directory (i.e. <code>cd common</code>) and checkout desired version:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">git checkout 0.4.0</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>(for version <code>0.4.0</code>).</p>
+</div>
+<div class="paragraph">
+<p>Assembling is then possible with manual invocation of Kick Assembler:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">java -jar c:\ka\KickAss.jar -libdir ../libs SomeFile.asm
+java -jar c:\ka\KickAss.jar -libdir ../libs SomeOtherFile.asm</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_manual_copy">2.3. Manual copy</h3>
+<div class="paragraph">
+<p>Least desired method of installation of <code>c64lib</code> is to download source code of given version and unzipping it into target directory.
+It is not a very convenient method, but it does not require Gradle nor Git to be installed on your computer.</p>
+</div>
+<div class="paragraph">
+<p>For every library module you have to visit GitHub and open Releases tab:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>https://github.com/c64lib/common/releases/tag/0.1.0</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Under assets, you will see zipped content of the library. Download it and unzip into desired location, i.e. into <code>libs</code> directory.
+In result, you end up with a similar layout as with "Git clone" method (see above).</p>
+</div>
+<div class="paragraph">
+<p>You use exactly the same method to use library in your source code, i.e.:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#import "common/lib/invoke_global.asm"</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>and you invoke Kick Assembler using the same syntax:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">java -jar c:\ka\KickAss.jar -libdir ../libs SomeFile.asm</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>assuming, that your <code>libs</code> directory exists on the same level as your project directory.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_building_blocks">3. Building blocks</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_the_c64lib_namespace">3.1. The c64lib namespace</h3>
+<div class="paragraph">
+<p>Each element mentioned in this section are declared inside <code>c64lib</code> namespace.
+This is to avoid potential name clashes with other libraries and/or with client assembly programs.
+Kick Assembler allows to access namespaced objects via <code>c64lib.</code> prefix, but this, unfortunately, works for labels only.
+All other elements such as functions and macros can be only accessed from within <code>c64lib</code> namespace.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_global_imports">3.2. Global imports</h3>
+<div class="paragraph">
+<p>If accessing elements via <code>c64lib</code> namespace is, by any reason, not possible nor convenient, there are also so-called "global" declarations, where certain elements of the library are exposed with global names (thus accessible in global namespace).
+All such global declarations have names prefixed with <code>c64lib_</code> prefix, to avoid name clashes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_labels">3.3. Labels</h3>
+<div class="paragraph">
+<p>A label is a value tagged with name.
+Labels are used to give symbolic names to values denoting addresses, registers or constants.
+Labels are useful to define memory locations and are widely used in chipset library:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>.label VIC2                 = $D000
+.label SPRITE_0_X           = VIC2 + $00
+.label SPRITE_0_Y           = VIC2 + $01
+.label SPRITE_1_X           = VIC2 + $02
+.label SPRITE_1_Y           = VIC2 + $03
+.label SPRITE_2_X           = VIC2 + $04
+.label SPRITE_2_Y           = VIC2 + $05</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Labels are always declared inside <code>c64lib</code> namespace.
+Labels can be reached outside <code>c64lib</code> namespace by prefixing their names with namespace name (labels are the only elements that can be accessed that way due to Kick Assembler limitations).
+For example, at any time it is legal to write:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>lda #100
+sta c64lib.SPRITE_0_X</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_functions">3.4. Functions</h3>
+<div class="paragraph">
+<p>A function is an element of Kick Assembler that is declared using <code>.function</code> keyword.
+Functions does not assemble into any machine code - they are used by assembler to evaluate values that can be then used in other functions, macros or to assembly a code.</p>
+</div>
+<div class="exampleblock">
+<div class="title">Example 1. Function that negates (inverts all bits) of its argument.</div>
+<div class="content">
+<div class="literalblock">
+<div class="content">
+<pre>.function neg(value) {
+    .return value ^ $FF
+}</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="exampleblock">
+<div class="title">Example 2. Function that calculates packed value of memory register based on its arguments.</div>
+<div class="content">
+<div class="literalblock">
+<div class="content">
+<pre>/*
+* Params:
+* video: location of video ram: 0..15
+* bitmap: location of bitmap definition: 0..1
+*/
+.function getBitmapMemory(video, bitmap) {
+    .return bitmap&lt;&lt;3 | video&lt;&lt;4
+}</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Functions are always declared inside <code>c64lib</code> namespace.
+Functions are declared in files <code>.asm</code> files located under <code>lib</code> directory.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_macros">3.5. Macros</h3>
+<div class="paragraph">
+<p>A macro is an element of Kick Assembler that is declared using <code>.macro</code> directive.
+Once used, macro is replaced with assembly code defining it.
+Macros can be parametrised (that is, they can take an argument, or even more arguments) - this parametrisation can affect the code being generated.</p>
+</div>
+<div class="paragraph">
+<p>It is noteworthy that macro is not an equivalent of subroutine, even though it looks similar to one from syntactic point of view.
+When macro is “called”:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>someFancyMacro(parameter1, parameter2)</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>it does not mean, that your code will jump into place where macro someFancyMacro is declared, pass both parameters and return from that place once execution is finished.
+Instead, an assembler will paste code declared inside macro substituting parameters with values provided as <code>parameter1</code> and <code>parameter2</code>.</p>
+</div>
+<div class="paragraph">
+<p>Under some circumstances you can use macros as subroutines.
+This may be fast, because there is no subroutine calling overhead.
+This will however consume a lot of memory (in sense of generated machine code) if not used wisely.</p>
+</div>
+<div class="paragraph">
+<p>Macros are declared in <code>.asm</code> files located under <code>lib</code> directory.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_subroutines">3.6. Subroutines</h3>
+<div class="paragraph">
+<p>Subroutine is a consistent set of assembly instructions that performs concrete operation.
+The major difference between plain macro and subroutine is that macro is used to substitute commonly used patterns of intructions (at cost of growing machine code size) and subroutine is used to save on machine code size actually.</p>
+</div>
+<div class="sect3">
+<h4 id="_regular_subroutines">3.6.1. Regular subroutines</h4>
+<div class="paragraph">
+<p>As subroutine we understand a piece of ML code that can be used by jumping there with <code>jsr</code> operation.
+A subroutine always ends with rts which means that at the end of execution program counter will be restored to the position right after original <code>jsr</code> operation and code execution will continue.
+In this sense a subroutine is an equivalent of procedure, function or method in high level programming languages.</p>
+</div>
+<div class="paragraph">
+<p>Kick Assembler as such does not provide any special means to create subroutines as it is just a macro assembler.
+With <code>c64lib</code> we basically share subroutine code just by writing piece of <code>asm</code> code and place it in separate source files.</p>
+</div>
+<div class="paragraph">
+<p>Subroutines are declared in <code>.asm</code> files located under <code>lib/dir</code> subdirectory.
+Each subroutine consists of appropriate rts operation so that it should always be accessed with corresponding <code>jsr</code> operation.
+If soubroutine consumes input parameters, they should be set accordingly before <code>jsr</code> is executed.
+Depending on the parameter passing method it should be either register setup (that is <code>A</code>, <code>X</code> or <code>Y</code>), memory location setup or pushing to the stack.
+For stack method there is a convenience library invoke available.</p>
+</div>
+<div class="paragraph">
+<p>A subroutine code should be imported in place where it needs to be located - we don&#8217;t do it at the top of the source file but rather we use <code>#import</code> directive exactly in place where we want to have our subroutine.</p>
+</div>
+<div class="paragraph">
+<p>Lets consider <code>copyLargeMemForward</code> subroutine as an example.
+We have to label a place in memory where the subroutine will start and then import the subroutine itself:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>copyMemFwd:
+    #import "common/lib/sub/copyLargeMemForward.asm"</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The subroutine takes three parameters using stack passing method:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Stack WORD - source address</p>
+</li>
+<li>
+<p>Stack WORD - target address</p>
+</li>
+<li>
+<p>Stack WORD - size</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>So, before calling subroutine, you have to push 6 bytes to the stack.
+The easiest way to do it is to use invoke library:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#import "common/lib/invoke-global.asm"</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>and then:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>c64lib_pushParamW(sourceAddress)
+c64lib_pushParamW(destinationAddress)
+c64lib_pushParamW(amountOfBytesToCopy)
+jsr copyMemFwd</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In result a subroutine will be called and <code>amountOfBytesToCopy</code> bytes will be copied from <code>sourceAddress</code> location to the <code>destinationAddress</code> location.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_macro_hosted_subroutines">3.6.2. Macro-hosted subroutines</h4>
+<div class="paragraph">
+<p>Some subroutines use this convenient method of distribution.
+Instead of being declared in separate source file, they are declared where macros and functions are declared - in library source files itself.</p>
+</div>
+<div class="paragraph">
+<p>Macro-hosted subroutines are used when further parametrisation is needed before subroutine is ready to use.
+Usually there are some variants that can be turned on or off (in such case such macro can be called multiple times thus generating multiple versions of subroutine).
+Sometimes subroutine requires some zero-page addresses that we don&#8217;t want to hardcode in the library - it would be then up to the user to parametrise subroutine with addresses of choice.</p>
+</div>
+<div class="exampleblock">
+<div class="title">Example 3. A scroll subroutine</div>
+<div class="content">
+<div class="paragraph">
+<p>Let&#8217;s consider scroll1x1:</p>
+</div>
+<div class="paragraph">
+<p>This subroutine requires three parameters being passed via stack but also needs two consecutive bytes on zero page for functioning (indirect addressing is used).
+Let&#8217;s assume we will use address 4 and 5 for this purpose.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>#import "text/lib/scroll1x1.asm"
+#import "common/lib/invoke.asm"</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>...</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>.namespace c64lib {
+    pushParamW(screenAddress)
+    pushParamW(textAddress)
+    pushParamWInd(scrollPtr)
+}
+jsr scroll</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>...</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>scroll: .namespace c64lib { scroll1x1(4) }</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>So, the scroll subroutine is configured for address 4 (and 5), and installed under address denoted by scroll label.
+It can be then normally called with <code>jsr</code> scroll.
+Before calling input parameters need to be pushed to the stack.
+It is done via <code>pushParamW</code> macros (for address values) and <code>pushParamWInd</code> (to extract value from memory location pointed by parameter).</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_functional_guidelines">4. Functional guidelines</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_subroutines_2">4.1. Subroutines</h3>
+
+</div>
+<div class="sect2">
+<h3 id="_passing_parameters_to_subroutines">4.2. Passing parameters to subroutines</h3>
+<div class="paragraph">
+<p>In most cases a subroutine requires one or more input parameters.
+Number of parameters is basically unlimited.
+The size of each parameters can also vary (however usually it is 1 or 2 bytes).
+There are three methods of passing such parameters to the subroutine:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Using CPU registers.</p>
+</li>
+<li>
+<p>Using fixed memory locations.</p>
+</li>
+<li>
+<p>Using call stack.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The "CPU regs" method is the simplest and the most efficient, however, due to limited number and size of MOS 6502 registers (<code>A</code>, <code>X</code>, <code>Y</code>, each 1 byte in size) its application is very limited.</p>
+</div>
+<div class="paragraph">
+<p>The "Fixed memory locations" method does not have this size limitation and also, when using zero page, can be quite performant.
+This method can be rather tricky in application, because memory locations must be carefully choosen not to clash between different, possibly cooperating subs.
+The most pragmatic approach to this method is to use <a href="#_macro_hosted_subroutines">Macro-hosted subroutines</a>, where these fixed memory locations can be configured via macro attributes.</p>
+</div>
+<div class="paragraph">
+<p>The "call stack" method uses CPU stack located at page 1 to pass parameters.
+This way it is possible to pass more data than via CPU regs method and does not require fixed memory locations to be used.
+The stack size is of course very limited (256 bytes max, but each <code>jsr</code> consumes at least 3 bytes).</p>
+</div>
+<div class="paragraph">
+<p>It is possible and quite often useful to combine "CPU regs" and "Call stack" method: some arguments are passed via registers and some via stack.
+We&#8217;ll call this method a hybrid invocation.</p>
+</div>
+<div class="sect3">
+<h4 id="_support_for_call_stack_parameters_passing">4.2.1. Support for call stack parameters passing</h4>
+<div class="paragraph">
+<p>The <code>common</code> library contains helper macros for parameter passing via the stack.
+Recursive calls to the subroutines are not supported.</p>
+</div>
+<div class="openblock">
+<div class="title">Related sources</div>
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p><code>c64lib/common/lib/invoke.asm</code>.</p>
+</li>
+<li>
+<p><code>c64lib/common/lin/invoke-global.asm</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Parameters should be pushed onto the stack just before calling subroutine (which is done via <code>jsr</code> instruction).
+Within the subroutine, parameters must be fetched from the stack in reverse order and stored elsewhere.
+Before this is done, a return pointer must be preserved in order to enable return from the subroutine (a <code>rts</code> instruction).</p>
+</div>
+<div class="paragraph">
+<p>There are four macros for pushing parameters to the subroutine:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>pushParamB</code></dt>
+<dd>
+<p>Pushes single byte as a parameter. The byte is provided via macro parameter.</p>
+</dd>
+<dt class="hdlist1"><code>pushParamW</code></dt>
+<dd>
+<p>Pushes two bytes as a parameter. The word is provided via macro parameter.</p>
+</dd>
+<dt class="hdlist1"><code>pushParamBInd</code></dt>
+<dd>
+<p>Pushes single byte as a parameter. The address of this byte is provided via macro parameter.</p>
+</dd>
+<dt class="hdlist1"><code>pushParamWInd</code></dt>
+<dd>
+<p>Pushes two bytes as a parameter. The starting address of this two-byte value is provided via macro parameter.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>All these macros are destroying <code>A</code> register, that should be considered when using hybrid invocation (first push params via macros, last set the <code>A</code> parameter value).</p>
+</div>
+<div class="exampleblock">
+<div class="title">Example 4. <code>copyLargeMemForward</code> invocation.</div>
+<div class="content">
+<div class="paragraph">
+<p>The <code>copyLargeMemForward</code> subroutine copies up to 64K of data from one memory location to another memory location.
+These memory locations can overlap as long as we copy from lower address to higher address.
+This subroutine uses call stack invocation method and requires 6 bytes of input parameters:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Source data address.</p>
+</li>
+<li>
+<p>Destination address.</p>
+</li>
+<li>
+<p>Data size.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s assume we want to copy 1024 bytes from $3000 to $4000.
+Example of the subroutine invocation is following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">pushParamW($3000)
+pushParamW($4000)
+pushParamW(1024)
+jsr copyLargeMemForward</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>The subroutine, once being called, must do the following:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Pull return address from the stack and store it in temporary place.</p>
+</li>
+<li>
+<p>Pull all parameters from the stack in reverse order and store them in some internal placeholders.</p>
+</li>
+<li>
+<p>Push return address back to the stack.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Preserving and restoring of return address may be done via <code>invokeStackBegin</code> and <code>invokeStackEnd</code> macros.
+Each of these macros takes single argument that denotes temporary address of 2-byte large placeholder where return address can be preserved.</p>
+</div>
+<div class="paragraph">
+<p>The <code>invokeStackBegin</code> should be called before any parameter is pulled from the stack.
+The <code>invokeStackEnd</code> should be called before a <code>rts</code> instruction is called.</p>
+</div>
+<div class="paragraph">
+<p>There are three macros for pulling parameters from the stack (remember to call them in reverse order, this is how the stack works):</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>pullParamB</code></dt>
+<dd>
+<p>Pulls a single byte from the stack and stores it under address given as a macro parameter.</p>
+</dd>
+<dt class="hdlist1"><code>pullParamW</code></dt>
+<dd>
+<p>Pulls two bytes from the stack and stores them under address given as a macro parameter.</p>
+</dd>
+<dt class="hdlist1"><code>pullParamWList</code></dt>
+<dd>
+<p>Pulls two bytes from the stack and stores them under multiple addresses provided as an input parameter list.</p>
+</dd>
+</dl>
+</div>
+<div class="exampleblock">
+<div class="title">Example 5. <code>rotateMemRight</code> subroutine implementation.</div>
+<div class="content">
+<div class="paragraph">
+<p>The <code>rotateMemRight</code> subroutine rotates up to 256 bytes of the memory to the right.
+It uses hybrid invocation: a memory address (2 bytes) should be passed via stack, and size of the memory window should be set into <code>X</code> register.</p>
+</div>
+<div class="paragraph">
+<p>It uses self modifying code technique and copies input address directly into four address location in its own code.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">  rotateMemRight: {
+
+  invokeStackBegin(returnPtr)
+  pullParamWList(List().add(loadFirst, loadNext, staNext, staLast))
+
+  lda loadFirst:$ffff, x
+  sta preserve
+  loop:
+    dex
+    lda loadNext:$ffff, x
+    inx
+    sta staNext:$ffff, x
+    dex
+  bne loop
+  lda preserve
+  sta staLast:$ffff
+
+  invokeStackEnd(returnPtr)
+  rts
+  // local vars
+  returnPtr:      .word 0
+  preserve:       .byte 0
+  }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It is noteworthy, that semi-local variables are declared as additional 3 bytes at the end of the subroutine (guarded by preceding <code>rts</code> instruction).
+These variables are used to preserve return address and additional single byte for rotation.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_memory_operations">4.3. Memory operations</h3>
+<div class="paragraph">
+<p>The <code>common</code> library helper macros helps with common memory related operations.</p>
+</div>
+<div class="openblock">
+<div class="title">Related sources</div>
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p><code>c64lib/common/lib/mem.asm</code>.</p>
+</li>
+<li>
+<p><code>c64lib/common/lib/mem-global.asm</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_setting_the_memory">4.3.1. Setting the memory</h4>
+<div class="paragraph">
+<p>There are a bunch of <code>set*</code> pseudocommands that can be used to quickly set given memory cells to some value.
+The <code>set8</code> works with 1-byte values, the <code>set16</code> works with 2-byte values (words).</p>
+</div>
+<div class="paragraph">
+<p>The following sets content of memory address <code>$B000</code> to <code>0</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">set8 #0 : $B000</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The following sets content of memory address <code>$C000</code> to a value stored under address <code>$0F</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">set8 $0F : $B000</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It is also possible to set two consecutive bytes to a given 2-byte value, but one needs to use the following macro for that (sets <code>$B000</code> to <code>$02</code> and <code>$B001</code> to <code>$01</code>):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">set16($0102, $B000)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>There is also a macro for setting one byte value which can be used as long as immediate addressing is needed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">set8($01, $B000)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In order to fill specified memory block with given value a <code>fillMem</code> subroutine can be used.</p>
+</div>
+<div class="exampleblock">
+<div class="title">Example 6. Filling memory with a value.</div>
+<div class="content">
+<div class="paragraph">
+<p>In order to use this subroutine import it and place a label before it so it can be called later.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">fillMem: #import "common/lib/sub/fill-mem.asm"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This subroutine uses hybrid invocation, push start address of the memory block into the stack and set value in <code>A</code> and block size in <code>X</code>.
+As you see, this subroutine is limited to 255 as maximum size of the block.</p>
+</div>
+<div class="paragraph">
+<p>The following code can be used to fill <code>200</code> bytes of memory starting from <code>$B000</code> address with value <code>0</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">pushParamW($B000)
+lda #0
+ldx #200
+jsr fillMem</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_memory_transfer">4.3.2. Memory transfer</h4>
+<div class="paragraph">
+<p>You can use <code>copy8</code> pseudocommand to copy one byte from one place to another using <code>A</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copy8 $B000:$C000</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can use <code>copy16</code> pseudocommand to copy two consecuive bytes from one place to another:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copy16 $B000:$C000</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For fast, unrolled copying of data block use <code>copyFast</code> macro.
+To copy <code>20</code> bytes from <code>$B000</code> to <code>$C000</code> use the following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copyFast($B000, $C000, 20)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Remember, that <code>copyFast</code> macro will consume a lot of space if count parameter (the last one) will be big.</p>
+</div>
+<div class="paragraph">
+<p>There is a "slow" copy subroutine that is handy for "unpacking" a PRG file and moving arbitrary sized blocks of data to the target location.
+This subroutine can be used to move SID data (music) into target location as well as to move VIC-II data (charsets, sprites) into the VIC-II addressable bank.
+Target and source spaces can overlap as long as target address is bigger than source address.</p>
+</div>
+<div class="exampleblock">
+<div class="title">Example 7. Copying large blocks of data</div>
+<div class="content">
+<div class="paragraph">
+<p>In order to use this subroutine import it and place a label before, so that it can be called later.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copyLargeMemForward: #import "common/lib/sub/copy-large-mem-forward.asm"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This subroutine requires three WORD parameters to be placed on stack:
+* source address
+* target address
+* data size (can be more than 256)</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">pushParamW($A000)
+pushParamW($E000)
+pushParamW(1024)
+jsr copyLargeMemForward</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_16_bit_math">4.4. 16-bit math</h3>
+<div class="paragraph">
+<p>The <code>common</code> library helper macros helps with common math related operations.
+They "extend" a basic set of math opcodes used to do arithmetics with macros and pseudocommands that operates on two-byte sized values (words).</p>
+</div>
+<div class="openblock">
+<div class="title">Related sources</div>
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p><code>c64lib/common/lib/math.asm</code>.</p>
+</li>
+<li>
+<p><code>c64lib/common/lib/math-global.asm</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_increments_decrements">4.4.1. Increments, decrements</h4>
+<div class="paragraph">
+<p>You can easily increment and decrement 16-bit counters using following macros:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">inc16($2000) // increments counter located in $2000,$2001</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">dec16($3000) // decrements counter located in $3000,$3001</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_adding_subtraction">4.4.2. Adding, subtraction</h4>
+<div class="paragraph">
+<p>You can add / subtract value to / from a value stored in memory via <code>add16</code> and <code>sub16</code> macros.</p>
+</div>
+<div class="paragraph">
+<p>In example to add <code>315</code> to the value stored under <code>$B000</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">add16(315, $B000)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Alternatively you can use <code>add16</code> and <code>sub16</code> pseudocommands:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">add16 $B000 : $C000</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can add / subtract value stored in one memory address to / from a value stored in another memory address via <code>addMem16</code> and <code>subMem16</code>, respectively.</p>
+</div>
+<div class="paragraph">
+<p>In example to add value from address <code>$B000:$B001</code> to the value from address <code>$C000:$C001</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">addMem16($B000, $C000)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_far_conditional_jumps">4.5. Far conditional jumps</h3>
+<div class="paragraph">
+<p>Well known limitation of MOS 6502 machine code is that conditional jump instructions use 1 byte for relative jump shift.
+This means that if you want to jump too far, you have to use conditional / absolute jump combination, which is cumbersome.</p>
+</div>
+<div class="openblock">
+<div class="title">Related sources</div>
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p><code>c64lib/common/lib/common.asm</code>.</p>
+</li>
+<li>
+<p><code>c64lib/common/lib/common-global.asm</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>c64lib</code> offers few macros that can simplify this task:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">fbne(label)</dt>
+<dd>
+<p>It calculates the jump length and if it is too far it replaces simple <code>bne</code> with <code>beq</code>/<code>jmp</code> combination.</p>
+</dd>
+<dt class="hdlist1">fbmi(label)</dt>
+<dd>
+<p>It calculates the jump length and if it is too far it replaces simple <code>bmi</code> with <code>bpl</code>/<code>beq</code>`jmp` combination.</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_handling_of_rle_compression">4.6. Handling of RLE compression</h3>
+<div class="paragraph">
+<p>The <code>c64lib</code> supports very basic yet useful compression method called RLE.
+It is particularly useful for data consisting of repetitive patterns of bytes such as simple graphics, game maps and so on.</p>
+</div>
+<div class="openblock">
+<div class="title">Related sources</div>
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p><code>c64lib/common/lib/compress.asm</code></p>
+</li>
+<li>
+<p><code>c64lib/common/lib/compress-global.asm</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>One can call <code>compressRLE(data)</code> macro that crunches provided data <strong>during compilation</strong> of program.
+Such data must be loaded with <code>LoadBinary(filename)</code> function.</p>
+</div>
+<div class="paragraph">
+<p>Compressed data can be decompressed (and relocated) with <code>decompressRLE</code> subroutine.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">decompressRLE: #import "common/lib/sub/decompress_rle.asm"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This subroutine requires three WORD parameters to be placed on stack:
+* source address
+* target address</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">.var data = LoadBinary("data-to-be-compressed.bin")
+
+sourceAddress: c64lib_compressRLE(data)
+
+// ...
+
+pushParamW(sourceAddress)
+pushParamW(targetAddress)
+jsr decompressRLE
+
+// ...
+
+targetAddress:</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_commodore_64_memory_layout_management">4.7. Commodore 64 memory layout management</h3>
+<div class="paragraph">
+<p>The Commodore 64 is known to have extremely flexible memory layout configuration.
+The <code>c64lib</code> library provides simple macro to change memory configuration in single line of code.</p>
+</div>
+<div class="openblock">
+<div class="title">Related sources</div>
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p><code>c64lib/chipset/lib/mos6510.asm</code>.</p>
+</li>
+<li>
+<p><code>c64lib/chipset/lib/mos6510-global.asm</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>To change memory configuration one can run <code>configureMemory(config)</code> macro, where config can have one of the following values:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>RAM_RAM_RAM</code></p>
+</li>
+<li>
+<p><code>RAM_CHAR_RAM</code></p>
+</li>
+<li>
+<p><code>RAM_CHAR_KERNAL</code></p>
+</li>
+<li>
+<p><code>BASIC_CHAR_KERNAL</code></p>
+</li>
+<li>
+<p><code>RAM_IO_RAM</code></p>
+</li>
+<li>
+<p><code>RAM_IO_KERNAL</code></p>
+</li>
+<li>
+<p><code>BASIC_IO_KERNAL</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The <code>BASIC_IO_KERNAL</code> is an initial value after C64 is being powered on.
+Names of the labels above are self explanatory: each section represents one of switchable region: RAM or BASIC, RAM/IO/CHARSET and RAM or KERNAL.</p>
+</div>
+<div class="exampleblock">
+<div class="title">Example 8. Switching to the most useful memory layout</div>
+<div class="content">
+<div class="paragraph">
+<p>You usually don&#8217;t need BASIC and KERNAL but still want IO region to be banked in.</p>
+</div>
+<div class="paragraph">
+<p>You have to ensure that interrupts are disabled during configuration process.
+You would like to disable default interrupt sources (as KERNAL is banked out the interrupt vectors are too).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">sei
+c64lib_disableNMI()
+c64lib_configureMemory(c64lib.RAM_IO_RAM)
+c64lib_disableCIAInterrupts()
+cli</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vic_ii_memory_management">4.8. VIC-II memory management</h3>
+<div class="sect3">
+<h4 id="_configuring_vic_ii_memory_bank">4.8.1. Configuring VIC-II memory bank</h4>
+<div class="paragraph">
+<p>Configuration of which one out of four C64 memory banks is addressable by VIC-II chip can be done via reprogramming the CIA-2 chip.</p>
+</div>
+<div class="openblock">
+<div class="title">Related sources</div>
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p><code>c64lib/chipset/lib/cia.asm</code>.</p>
+</li>
+<li>
+<p><code>c64lib/chipset/lib/cia-global.asm</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>The change can be done via <code>setVICBank</code>`c64lib_setVICBank` macro.</p>
+</div>
+<div class="paragraph">
+<p>The following code:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">c64lib_setVICBank(c64lib.BANK3)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>sets up the last memory bank (<code>$C000</code>-<code>$FFFF</code>) for VIC-II graphic chip.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vic_ii_memory_layout_management">4.8.2. VIC-II memory layout management</h4>
+<div class="paragraph">
+<p>There are two distinct memory areas that have to be fconfigured for VIC-II.
+Their meaning is different depending on the screen mode.
+For text modes it would be screen memory and charset memory.
+For bitmap modes it would be screen memory and bitmap memory.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vic_ii_ntsc_detection">4.9. VIC-II NTSC detection</h3>
+
+</div>
+<div class="sect2">
+<h3 id="_vic_ii_irq_handling">4.10. VIC-II IRQ handling</h3>
+
+</div>
+<div class="sect2">
+<h3 id="_text_outputting">4.11. Text outputting</h3>
+<div class="paragraph">
+<p>The <code>text</code> library offers macros and subroutines to output texts and numbers.</p>
+</div>
+<div class="openblock">
+<div class="title">Related sources</div>
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p><code>c64lib/text/lib/text.asm</code>.</p>
+</li>
+<li>
+<p><code>c64lib/text/lib/text-global.asm</code>.</p>
+</li>
+<li>
+<p><code>c64lib/text/lib/sub/out-hex-nibble.asm</code>.</p>
+</li>
+<li>
+<p><code>c64lib/text/lib/sub/out-hex.asm</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>outTextXYC</code> outputs text terminated with <code>$FF</code> that is no longer than 255 characters.
+As it is a macro-hosted subroutine, it must be instantiated with screen and color RAM addresses first.
+Such subroutine can be then used to output different texts at different screen position and with different color.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">myOutTextXYC: c64lib_outTextXYC($1000, $D800)
+
+text: .text "Commodore 64"; .byte $ff
+
+c64lib_pushParamW(text)
+ldx #5
+ldy #12
+lda #LIGHT_GREEN
+jsr myOutTextXYC</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>outNumberXYC</code> outputs two digit number (a byte).
+As this is a macro-hosted subroutine, it must be instantiated with screen and color RAM addresses first.
+Such subroutine can be then used to output numbers at different screen position and with different color.
+This subroutine displays bytes in hexadecimal form unless number is BCD packed.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">myOutNumberXYC: c64lib_outNumberXYC($1000, $D800)
+
+number: .byte 3*16 + 6
+
+c64lib_pushParamW(number)
+ldx #5
+ldy #12
+lda #LIGHT_GREEN
+jsr myOutNumberXYC // displays 36 at (5,12) using light green color</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_text_scrolling">4.12. Text scrolling</h3>
+<div class="paragraph">
+<p>coming soon</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_2x2_scrollable_background">4.13. 2x2 scrollable background</h3>
+<div class="paragraph">
+<p>coming soon</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_copper_64">5. Copper 64</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Coppper 64 library is a tool that eases complex raster-related effects that can be achieved by Commodore 64.</p>
+</div>
+<div class="paragraph">
+<p>Raster-related effects are all effects that are triggered at certain raster line.
+The Commodore 64 and its VIC-II chip can be programmed in a way so that CPU is interrupted once certain raster line of the screen is drawn by CRT (or LCD).
+If this interrupt then performs certain actions, sometimes even by reprogramming of VIC-II itself, a wide variety of interesting effects can be achieved:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>splitting the screen into two or more pieces each using different screen mode or addressing,</p>
+</li>
+<li>
+<p>extending amount of visible colours by changing global colour registers of VIC-II,</p>
+</li>
+<li>
+<p>extending amount of visible sprites by reusing eight available sprite slots in different regions of the screen (so-called sprite multiplexing),</p>
+</li>
+<li>
+<p>displaying colorful raster bars or achieving "rainbow fonts",</p>
+</li>
+<li>
+<p>performing certain video-RAM operations at given moments to achieve smooth scrolling,</p>
+</li>
+<li>
+<p>doing any "background task" that requires regular update such as playing music or incrementing timers,</p>
+</li>
+<li>
+<p>and many more&#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usually you need to perform various raster-relation actions at once, on single screen.
+This means that you need to perform several different handling code for several different raster times.
+Unfortunately, the VIC-II chip and its interrupt system allows just to specify single raster value at a time - that is, you can only trigger an interrupt at single line.</p>
+</div>
+<div class="paragraph">
+<p>This is a limitation that can be overcame: all you need to do is to reprogram VIC-II raster register at the end of interrupt handling method, maybe also reprogram IRQ vector of MOS 6502 so that the VIC-II will execute second IRQ handler at second position.
+Of course, you have to reprogram raster register at the end of the second IRQ handler, the same needs to be done for IRQ vector.
+This way you have two distinct IRQ handlers fired at two distinct raster positions.</p>
+</div>
+<div class="paragraph">
+<p>This approach can be generalized to N handlers and raster positions.
+Of course at each time you have to ensure that:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Raster position grows except the very last position which should reset to the lowest raster at the end.</p>
+</li>
+<li>
+<p>You have to ensure that IRQ handler have enough time to execute itself (the next raster position must be big enough so that we have enough cycles to execute the whole IRQ handler).</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Not conforming to any of the rules above results in effect called "frame-skips", that is the VIC-II will display the whole frame before next handler will be run.</p>
+</div>
+<div class="paragraph">
+<p>Futhermore, the MOS 6502 are unstable by default, that is, it is usually hard to predict when exactly the code execution by the CPU will be interrupted.
+Some visual effects are affected by this problem, prominently screen splits and raster bars.
+Special programming techniques including code cycling and double interrupts are used to mitigate this problem.</p>
+</div>
+<div class="paragraph">
+<p>The Copper 64 library solves most of these problems.
+It is configured via special table allowing to specify various effects being triggered at raster lines.
+The design of this library has been inspired by Amiga&#8217;s Copper chip (and so-called Copper list) or 8-bit Atari&#8217;s display list.</p>
+</div>
+<div class="openblock">
+<div class="title">Related sources</div>
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p><code>c64lib/copper64/lib/copper64.asm</code>.</p>
+</li>
+<li>
+<p><code>c64lib/copper64/lin/copper64-global.asm</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_defining_copper_table">5.1. Defining Copper table</h3>
+<div class="paragraph">
+<p>Copper table is a block of memory containing copper entries, 4 bytes each.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. Copper 64 entry definition</caption>
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 60%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Byte offset</th>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Control</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Control byte serving different purposes (see below).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Raster</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Lower 8 bits of raster line address.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Data 1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">First byte of data.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Data 2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Second byte of data.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The control byte has multiple purposes depending on its value:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 2. Control value</caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Control value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>$00</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Stop execution of the copper list.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>$FF</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">End of the copper list (start from the beginning - loop).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>$01</code> - <code>$FE</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Execute function (see below).</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>For values from range <code>$01</code> - <code>$FE</code> the bits of the control byte have following meanings.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 3. Function selector structure</caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Bit</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>7</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Nineth bit of the raster line address.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>6</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reserved, should be 0.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>5</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reserved, should be 0.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>4..0</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRQ Function - 1..31.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>There are two macros that can be used to simplify copper table definition:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>copperEntry</code></dt>
+<dd>
+<p>Creates single effect line of copper list. This macro takes following arguments: <code>raster</code> - raster counter (9 bits), <code>function</code> - IRQ handler code, <code>data1</code> - first byte of function data, <code>data2</code> - second byte of function data.</p>
+</dd>
+<dt class="hdlist1"><code>copperLoop</code></dt>
+<dd>
+<p>Is used to finish copper list - the copper 64 wraps to the first line once loop line is detected. This macro does not take any arguments.</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_copper_64_main_subroutine">5.2. Copper 64 main subroutine</h3>
+<div class="paragraph">
+<p>The main Copper 64 subroutine must be preconfigured using hosted subroutine approach.</p>
+</div>
+<div class="paragraph">
+<p>Copper 64 requires three bytes from zero page: two subsequent bytes to store copper list address and one byte for copper list pointer.</p>
+</div>
+<div class="paragraph">
+<p>Install main subroutine with following macro call:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">.label COPPER_LIST_ADDR = $10
+.label COPPER_LIST_PTR = $12
+
+startCopper(
+    COPPER_LIST_ADDR,
+    COPPER_LIST_PTR,
+    List().add(c64lib.IRQH_JSR, c64lib.IRQH_BG_RASTER_BAR, c64lib.IRQH_BG_COL_0).lock())</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that all three location on the zero page can be freely configured via first and second parameter of the macro call.</p>
+</div>
+<div class="paragraph">
+<p>As the third argument you have to pass a locked list of all IRQ handlers you are going to use in copper list.
+That is, even though Copper 64 supports more than dozen of different effects, only few of them can be used at once (this limitation is caused by the fact, that Copper 64 is cycled to achieve stable effects, therefore all handlers must fit into single page of memory).</p>
+</div>
+<div class="paragraph">
+<p>Once hosted subroutine is installed and configured, you can make call to it, ensuring that firstly you set up copper list address into appropriate zero page location.
+This way you can easily reuse the same main subroutine for different copper list, this works well as long as you use the same set of IRQ handlers in all of these lists.
+If by any reason you cannot use the same list of IRQ handlers (because i.e. they do not fit into 256 bytes of memory), you have to configure and install main subroutine twice.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_stop_copper_64_subroutine">5.3. Stop Copper 64 subroutine</h3>
+<div class="paragraph">
+<p>Basically you have to stop IRQ to have Copper 64 deactivated, or reprogram IRQ vector, or both.
+You can use the following macro to just turn VIC-II initiated IRQ off:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">stopCopper()</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_copper_64_effects">5.4. Copper 64 effects</h3>
+<div class="sect3">
+<h4 id="_set_border_color">5.4.1. Set border color</h4>
+<div class="paragraph">
+<p>Changes border color.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_BORDER_COL</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>1</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> desired border color; <code>0..15</code></p>
+</li>
+<li>
+<p><em>Argument 2:</em> unused</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_BORDER_COL, &lt;color&gt;, 0)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_set_background_color_0">5.4.2. Set background color 0</h4>
+<div class="paragraph">
+<p>Changes background color 0.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_BG_COL_0</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>2</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> desired background 0 color; <code>0..15</code></p>
+</li>
+<li>
+<p><em>Argument 2:</em> unused</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_BG_COL_0, &lt;color&gt;, 0)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_set_background_color_1">5.4.3. Set background color 1</h4>
+<div class="paragraph">
+<p>Changes background color 1.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_BG_COL_1</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>3</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> desired background 1 color; <code>0..15</code></p>
+</li>
+<li>
+<p><em>Argument 2:</em> unused</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_BG_COL_1, &lt;color&gt;, 0)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_set_background_color_2">5.4.4. Set background color 2</h4>
+<div class="paragraph">
+<p>Changes background color 2.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_BG_COL_2</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>4</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> desired background 2 color; <code>0..15</code></p>
+</li>
+<li>
+<p><em>Argument 2:</em> unused</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_BG_COL_2, &lt;color&gt;, 0)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_set_background_color_3">5.4.5. Set background color 3</h4>
+<div class="paragraph">
+<p>Changes background color 3.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_BG_COL_3</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>5</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> desired background 3 color; <code>0..15</code></p>
+</li>
+<li>
+<p><em>Argument 2:</em> unused</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_BG_COL_3, &lt;color&gt;, 0)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_set_border_and_background_0_color_uniformly">5.4.6. Set border and background 0 color uniformly</h4>
+<div class="paragraph">
+<p>Changes background color 0 and border color to the same color.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_BORDER_BG_0_COL</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>6</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> desired color for border and background 0; <code>0..15</code></p>
+</li>
+<li>
+<p><em>Argument 2:</em> unused</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_BORDER_BG_0_COL, &lt;color&gt;, 0)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_set_border_and_background_0_color_separately">5.4.7. Set border and background 0 color separately</h4>
+<div class="paragraph">
+<p>Changes background color 0 and border color to another values in single step, the colors are specified as arguments.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_BORDER_BG_0_DIFF</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>7</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> desired color for border; <code>0..15</code></p>
+</li>
+<li>
+<p><em>Argument 2:</em> desired color for background 0; <code>0..15</code></p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_BORDER_BG_0_DIFF, &lt;border color&gt;, &lt;background color&gt;)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_set_vic_memory_register_and_vic_memory_bank">5.4.8. Set VIC memory register and VIC memory bank</h4>
+<div class="paragraph">
+<p>Changes VIC memory control and VIC memory bank in one step.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_MEM_BANK</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>8</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> value for <code>MEMORY_CONTROL</code> register</p>
+</li>
+<li>
+<p><em>Argument 2:</em> value for VIC bank (goes to <code>CIA2_DATA_PORT_A</code>); only two least significant bits are taken, other bits of the data port are preserved</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_MEM_BANK, &lt;memory control&gt;, &lt;vic bank number&gt;)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_set_vic_mode_and_memory_settings">5.4.9. Set VIC mode and memory settings</h4>
+<div class="paragraph">
+<p>Changes VIC display mode and memory settings in one step. VIC bank cannot be changed.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_MODE_MEM</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>9</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> mode of vic2; for performance reasons the values for two control registers are packed in one byte: <code>%00010000</code> for Multicolor, <code>%01100000</code> for ECM or Bitmap</p>
+</li>
+<li>
+<p><em>Argument 2:</em> value for <code>MEMORY_CONTROL</code> register</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_MODE_MEM, &lt;vic mode&gt;, &lt;memory control&gt;)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_jump_to_custom_subroutine">5.4.10. Jump to custom subroutine</h4>
+<div class="paragraph">
+<p>Jumps to custom subroutine that can do whatever you want, i.e. play music. Subroutine must end with <code>rts</code>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_JSR</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>10</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> Low byte of subroutine address</p>
+</li>
+<li>
+<p><em>Argument 2:</em> High byte of subroutine address</p>
+</li>
+<li>
+<p><em>Cycled:</em> no</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_JSR, &lt;address, &gt;address)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_set_hires_bitmap_mode">5.4.11. Set hires bitmap mode</h4>
+<div class="paragraph">
+<p>Sets up hires bitmap mode using given memory layout and VIC bank. Useful for screen splits using totally different memory locations for VIC chip.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_MODE_HIRES_BITMAP</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>11</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> value for <code>MEMORY_CONTROL</code> register</p>
+</li>
+<li>
+<p><em>Argument 2:</em> value for VIC bank (goes to <code>CIA2_DATA_PORT_A</code>); only two least significant bits are taken, other bits of the data port are preserved</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_MODE_HIRES_BITMAP, &lt;memory control&gt;, &lt;vic bank number&gt;)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_set_multicolor_mode">5.4.12. Set multicolor mode</h4>
+<div class="paragraph">
+<p>Sets up multicolor bitmap mode using given memory layout and VIC bank. Useful for screen splits using totally different memory locations for VIC chip.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_MODE_MULTIC_BITMAP</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>12</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> value for <code>MEMORY_CONTROL</code> register</p>
+</li>
+<li>
+<p><em>Argument 2:</em> value for VIC bank (goes to <code>CIA2_DATA_PORT_A</code>); only two least significant bits are taken, other bits of the data port are preserved</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_MODE_MULTIC_BITMAP, &lt;memory control&gt;, &lt;vic bank number&gt;)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_set_hires_text_mode">5.4.13. Set hires text mode</h4>
+<div class="paragraph">
+<p>Sets up hires text mode using given memory layout and VIC bank. Useful for screen splits using totally different memory locations for VIC chip.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_MODE_HIRES_TEXT</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>13</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> value for <code>MEMORY_CONTROL</code> register</p>
+</li>
+<li>
+<p><em>Argument 2:</em> value for VIC bank (goes to <code>CIA2_DATA_PORT_A</code>); only two least significant bits are taken, other bits of the data port are preserved</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_MODE_HIRES_TEXT, &lt;memory control&gt;, &lt;vic bank number&gt;)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_set_multicolor_text_mode">5.4.14. Set multicolor text mode</h4>
+<div class="paragraph">
+<p>Sets up multicolor text mode using given memory layout and VIC bank. Useful for screen splits using totally different memory locations for VIC chip.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_MODE_MULTIC_TEXT</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>14</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> value for <code>MEMORY_CONTROL</code> register</p>
+</li>
+<li>
+<p><em>Argument 2:</em> value for VIC bank (goes to <code>CIA2_DATA_PORT_A</code>); only two least significant bits are taken, other bits of the data port are preserved</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_MODE_MULTIC_TEXT, &lt;memory control&gt;, &lt;vic bank number&gt;)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_set_extended_background_mode">5.4.15. Set extended background mode</h4>
+<div class="paragraph">
+<p>Sets up extended text mode using given memory layout and VIC bank. Useful for screen splits using totally different memory locations for VIC chip.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_MODE_EXTENDED_TEXT</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>15</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> value for <code>MEMORY_CONTROL</code> register</p>
+</li>
+<li>
+<p><em>Argument 2:</em> value for VIC bank (goes to <code>CIA2_DATA_PORT_A</code>); only two least significant bits are taken, other bits of the data port are preserved</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_MODE_EXTENDED_TEXT, &lt;memory control&gt;, &lt;vic bank number&gt;)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_full_raster_bar">5.4.16. Full raster bar</h4>
+<div class="paragraph">
+<p>Generates colorful raster bar across whole screen including border. Color for each subsequent bar line is fetched from <code>$FF</code> terminated array of colors (values <code>0..15</code>). Because procedure is cycled using busy waiting on raster, a raster time for whole bar will be consumed. Color array can be cycled or modified in any way to get interesting animation effects.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_FULL_RASTER_BAR</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>16</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> Low byte of bar color definition address</p>
+</li>
+<li>
+<p><em>Argument 2:</em> High byte of bar color definition address</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles) - it sucks on badlines however</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_FULL_RASTER_BAR, &lt;address, &gt;address)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_background_only_raster_bar">5.4.17. Background-only raster bar</h4>
+<div class="paragraph">
+<p>Generates colorful raster bar across whole background. Color for each subsequent bar line is fetched from <code>$FF</code> terminated array of colors (values <code>0..15</code>). Because procedure is cycled using busy waiting on raster, a raster time for whole bar will be consumed. Color array can be cycled or modified in any way to get interesting animation effects.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_BG_RASTER_BAR</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>17</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> Low byte of bar color definition address</p>
+</li>
+<li>
+<p><em>Argument 2:</em> High byte of bar color definition address</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_BG_RASTER_BAR, &lt;colorCycleDef, &gt;colorCycleDef)
+...
+colorCycleDef:  .byte COLOR_3, LIGHT_RED, RED, LIGHT_RED, YELLOW, WHITE, YELLOW, YELLOW, COLOR_3, $ff</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_horizontal_scroll">5.4.18. Horizontal scroll</h4>
+<div class="paragraph">
+<p>Scrolls screen horizontally using specified amount of pixels.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_HSCROLL</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>17</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> value for horizontal scroll register (<code>0..7</code>)</p>
+</li>
+<li>
+<p><em>Argument 2:</em> unused</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_HSCROLL, &lt;scroll value&gt;, 0)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_mapped_horizontal_scroll">5.4.19. Mapped horizontal scroll</h4>
+<div class="paragraph">
+<p>Applies shallow tech-tech effect (using values <code>0..7</code>) starting from given raster position. Horizontal scroll value for each corresponding raster line is taken from <code>$FF</code> terminated array of values, each should contain value from <code>0..7</code> range. The scroll map can be further modified (i.e. rotated) to achieve interesting animation effects.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Handler label:</em> <code>IRQH_HSCROLL_MAP</code></p>
+</li>
+<li>
+<p><em>Handler code:</em> <code>17</code></p>
+</li>
+<li>
+<p><em>Argument 1:</em> low byte of scroll map definition address</p>
+</li>
+<li>
+<p><em>Argument 2:</em> high value of scroll map definition address</p>
+</li>
+<li>
+<p><em>Cycled:</em> yes (PAL, 63 cycles)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperEntry(&lt;raster&gt;, c64lib.IRQH_HSCROLL_MAP, &lt;hscrollMapDef, &gt;hscrollMapDef)
+...
+hscrollMapDef:  .fill TECH_TECH_WIDTH, round(3.5 + 3.5*sin(toRadians(i*360/TECH_TECH_WIDTH))) ; .byte 0; .byte $ff</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_examples">5.5. Examples</h3>
+<div class="sect3">
+<h4 id="_level_screen_for_a_trex_64_game">5.5.1. Level screen for a TRex-64 game</h4>
+<div class="paragraph">
+<p>We would like to display a new level screen for a <a href="https://maciejmalecki.itch.io/trex64">video game</a>.
+This screen should play background music, display some information and handle controls to start the game when player is ready.
+Lets consider the following requirements:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Music player should be triggered once per frame.</p>
+</li>
+<li>
+<p>Regular font used on this screen should use "rainbow font" effect using smooth shades of grey.</p>
+</li>
+<li>
+<p>Get ready text should use different shades (yellow and red like fire) which is additionally animated by cycling the rainbow.</p>
+</li>
+<li>
+<p>We need a counter that can be used to calculate delay - this is required to handle keyboard input properly.</p>
+</li>
+</ol>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/copper64-trex-level.png" alt="copper64 trex level">
+</div>
+</div>
+<div class="paragraph">
+<p>The whole screen can be built using following copper table:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">copperList:
+    copperEntry(10, IRQH_JSR, &lt;playMusic, &gt;playMusic)
+    copperEntry(80, IRQH_JSR, &lt;scrollColorCycle2, &gt;scrollColorCycle2)
+    copperEntry(124, IRQH_BG_RASTER_BAR, &lt;colorCycle1, &gt;colorCycle1)
+    copperEntry(140, IRQH_BG_RASTER_BAR, &lt;colorCycle2, &gt;colorCycle2)
+    copperEntry(156, IRQH_BG_RASTER_BAR, &lt;colorCycle1, &gt;colorCycle1)
+    copperEntry(245, IRQH_JSR, &lt;dly_handleDelay, &gt;dly_handleDelay)
+    copperLoop()</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For background raster bar effect we use following arrays defining color cycles:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">colorCycle1: .byte GREY, GREY, GREY, LIGHT_GREY, WHITE, WHITE, LIGHT_GREY, GREY, GREY, BLACK, $ff
+colorCycle2: .byte BLACK, LIGHT_RED, RED, LIGHT_RED, YELLOW, YELLOW, WHITE, YELLOW, YELLOW, BLACK, $ff</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Additionally, the content of <code>colorCycle2</code> array is rotated using the following code, that is triggered by second entry of the copper table:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">scrollColorCycle2: {
+  dec z_colorCycleDelay2
+  bne !+
+    lda #COLOR_CYCLE_DELAY
+    sta z_colorCycleDelay2
+    rotateMemRightFast(colorCycle2 + 1, 6)
+  !:
+  rts
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that it is essential, that last byte of the colour cycle entry is the same as the screen colour (<code>BLACK</code> in this case) - this restores bg colour of the screen remainder.</p>
+</div>
+<div class="paragraph">
+<p>Also note, that "rainbow" font effect requires inverted charset to be used, because rainbow is done via rasterbar effect on background colour.</p>
+</div>
+<div class="paragraph">
+<p>The Copper 64 main subroutine can be configured in following way:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">startCoopper:
+  startCopper(
+    $03,
+    $05,
+    List().add(c64lib.IRQH_JSR, c64lib.IRQH_BG_RASTER_BAR).lock())</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Main subroutine can be then started multiple time using the following code:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">  lda #&lt;copperList
+  sta $03
+  lda #&gt;copperList
+  sta $04
+  jsr startCopper</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>As shown above, the Copper 64 subroutine can be easily reused with different copper lists as long as the same effects are used.
+All to be done is to set up copper list address which is in this example stored in addresses <code>$03</code> and <code>$04</code>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_title_screen_for_a_trex_64_game">5.5.2. Title screen for a TRex-64 game</h4>
+<div class="paragraph">
+<p>The title screen for the TRex-64 video game uses rainbow fonts, both static and animated as well as fade in/fade out effect on credits/instruction text.
+The fade effect is also done with background colour, so also inverted charset must be used to hide all parts of the background that shouldn&#8217;t be visible.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="img/copper64-trex-title.png" alt="copper64 trex title">
+</div>
+</div>
+<div class="paragraph">
+<p>This screen is implemented with following copper list:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">titleScreenCopperList:
+        copperEntry(10, IRQH_JSR, &lt;playMusic, &gt;playMusic)
+        copperEntry(80, IRQH_JSR, &lt;scrollColorCycle2, &gt;scrollColorCycle2)
+    fadeEffectColor:
+        copperEntry(166, IRQH_BG_COL_0, BLACK, 0)
+        copperEntry(190, IRQH_JSR, &lt;rotateColors, &gt;rotateColors)
+        copperEntry(206, IRQH_BG_COL_0, BLACK, 0)
+        copperEntry(235, IRQH_BG_RASTER_BAR, &lt;colorCycle2, &gt;colorCycle2)
+        copperEntry(250, IRQH_JSR, &lt;dly_handleDelay, &gt;dly_handleDelay)
+        copperEntry(261, IRQH_JSR, &lt;handleCredits, &gt;handleCredits)
+        copperLoop()</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In this example we see that copper list can be modified in runtime.
+Here we modify the background colour at the begining of the fade in section.
+In another place (<code>handleCredits</code>) we modify this value with simple:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">    sta fadeEffectColor + 2</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Just each time you want to fade in or out, we have to change colours according to special fade in / fade out array of colours.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_supporting_both_pal_and_ntsc">5.5.3. Supporting both PAL and NTSC</h4>
+<div class="paragraph">
+<p>We all know that NTSC on C64 is hard, because there are far less raster lines per frame (due to the fact that VIC-II does 60Hz vs 50Hz in PAL).
+But what is even harder and more awkward: while PAL version has 0 raster line at the very top of the screen, the raster 0 on NTSC is near at the bottom.</p>
+</div>
+<div class="paragraph">
+<p>For PAL we do have 312 raster lines, and v-blank starts at 300 (the very bottom of the visible screen area).
+for NTSC we have 263 raster lines, v-blank starts at line 13 (so raster lines 0 to 12 are visible at the very bottom of the screen).
+So, lets assume we would like to set up an interrupt at the line 251 (PAL).
+To have this interrupt to be triggered in exactly the same place on NTSC, we do need to set it up in line 1.</p>
+</div>
+<div class="paragraph">
+<p>Therefore in order to make our copper list work equally well on PAL and NTSC we do have to:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Detect which machine are we running on (PAL / NTSC).</p>
+</li>
+<li>
+<p>Modify copper list accordingly (change 251 to 1 if on NTSC).</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s consider following copper list:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">ingameCopperList:
+    copperEntry(DASHBOARD_Y + 20, IRQH_JSR, &lt;upperMultiplex, &gt;upperMultiplex) // 50 + 20 = 70
+    copperEntry(77, IRQH_JSR, &lt;playMusicIrq, &gt;playMusicIrq)
+  scrollCode:
+    copperEntry(103, IRQH_JSR, &lt;scrollBackground, &gt;scrollBackground)
+  switchPagesCode:
+    copperEntry(280, IRQH_JSR, &lt;switchPages, &gt;switchPages)
+    copperLoop()</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We see that the last raster line is way beyond of the NTSC display capabilities.
+In fact, IRQ at 280 will never be triggered on NTSC machine.
+In short, the following raster table will not work there.
+We have to detect NTSC and modify the table accordingly.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">startIngameCopper: {
+  lda #&lt;ingameCopperList
+  sta z_displayListPtr
+  lda #&gt;ingameCopperList
+  sta z_displayListPtr + 1
+
+  lda z_ntsc
+  bne ntsc
+  jmp !+
+  ntsc: {
+    // for NTSC we want to change raster counter for last IRQ handler (switch pages)
+    lda #8
+    sta switchPagesCode + 1
+    lda switchPagesCode
+    and #%01111111
+    sta switchPagesCode
+  }
+  !:
+    jsr startCopper
+  rts
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that we have to change both byte 0 and 1 of the copper list entry - this is because we have to also clear bit 9 of the raster counter, which is stored in control byte.</p>
+</div>
+<div class="paragraph">
+<p>To detect NTSC we can use the following code:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asm hljs" data-lang="asm">setNTSC: {
+  lda #1
+  sta z_ntsc
+  rts
+}
+
+detectNTSC: {
+  lda #0
+  sta z_ntsc
+  detectNtsc(0, setNTSC)
+  rts
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_contribute">6. Contribute</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_coding_standards">6.1. Coding standards</h3>
+
+</div>
+<div class="sect2">
+<h3 id="_branching_and_versioning_strategy">6.2. Branching and versioning strategy</h3>
+
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_library_reference">7. Library reference</h2>
+<div class="sectionbody">
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+This section is incomplete and will be rewritten soon.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_privacy_disclaimer">8. Privacy disclaimer</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_how_do_we_process_your_data">8.1. How do we process your data</h3>
+<div class="paragraph">
+<p>This website is powered by AsciiDoctor and is hosted on GitHub/GitHub Pages.</p>
+</div>
+<div class="paragraph">
+<p>AsciiDoctor is not collecting or processing user data in any form.</p>
+</div>
+<div class="paragraph">
+<p>GitHub however, as any other hosting company, can have full insight in visitor data, like connecting IP addresses, visited pages, etc.
+Note that Github is not known to actively profile visitors.
+By using a VPN you can (try to) prevent this.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_google_analytics">8.2. Google Analytics</h3>
+<div class="paragraph">
+<p>This website uses Google Analytics.
+This happens only if you accept third party cookies.
+I have configured Google Analytics so that IP addresses are anonymized.</p>
+</div>
+<div class="paragraph">
+<p>Use the following option to grant or revoke collecting data and using cookies.</p>
+</div>
+<p>
+<input type="checkbox" id="enableGA"> Enable Google Analytics
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2023-01-07 23:30:51 UTC
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/languages/assembly.min.js"></script>
+<script>
+if (!hljs.initHighlighting.called) {
+  hljs.initHighlighting.called = true
+  ;[].slice.call(document.querySelectorAll('pre.highlight > code')).forEach(function (el) { hljs.highlightBlock(el) })
+}
+</script>
+<div id="gdpr" style="display: none;">
+  <p>
+    This web page uses cookies to track anonymous user activities. By continuing using this site
+    or by closing this banner you indicate your consent to use these cookies.
+    You can change settings, i.e. disable user tracking in <a href="#_privacy_disclaimer">privacy</a> section of this page.
+  </p>
+  <button id="gdprClose">Close</button>
+</div>
+<script>
+  var useCookies = localStorage.getItem('useCookies');
+  document.getElementById('gdprClose').addEventListener('click', function() {
+    document.getElementById('gdpr').style.display = 'none';
+    localStorage.setItem('useCookies', 'true');
+  });
+  if (!useCookies) {
+    document.getElementById('gdpr').style.display = 'block';
+  }
+</script>
+<script>
+  var useCookies = localStorage.getItem('useCookies');
+  document.getElementById('enableGA').checked = (useCookies === 'true');
+  var checkbox = document.getElementById('enableGA');
+  checkbox.addEventListener('change', function() {
+    localStorage.setItem('useCookies', this.checked);
+  });
+</script>
+</body>
+</html>
